@@ -131,6 +131,11 @@ def setup_admin_credentials():
 # CREATE FLASK APP
 # ══════════════════════════════════════════════════════════════════════════════
 def create_app():
+    setup_directories()
+    setup_excel_files()
+    setup_default_services()
+    setup_admin_credentials()
+
     app = Flask(__name__)
     app.secret_key = config.SECRET_KEY
 
@@ -213,14 +218,6 @@ if __name__ == "__main__":
 
     print("\n=== Video Editing Management System (VEMS) ===")
     print("=" * 48)
-
-    print("\n[*]  Setting up folders...")
-    setup_directories()
-
-    print("\n[*]  Setting up Excel files...")
-    setup_excel_files()
-    setup_default_services()
-    setup_admin_credentials()
 
     print("\n[*]  Starting Flask server...")
     print("     URL  --> http://127.0.0.1:5000")
