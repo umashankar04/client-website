@@ -19,3 +19,9 @@ This app needs a Python host such as Render.
 3. Leave auto-deploy enabled so pushes to `main` publish automatically.
 
 The repo is public, so the hosted site can also be public.
+
+### Deploy from GitHub Actions
+
+1. Create a Render deploy hook for this service.
+2. Add the hook URL as a GitHub secret named `RENDER_DEPLOY_HOOK_URL`.
+3. Push to `main` or run the `Deploy` workflow manually.
