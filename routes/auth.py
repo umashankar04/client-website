@@ -12,6 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from models.users import AdminUser, ClientUser
 from utils.excel_manager import read_rows, write_rows
+from utils import db as _db
 from utils.helpers import today_str, generate_id
 import config
 
@@ -24,6 +25,13 @@ CLIENT_HEADERS = ["client_id", "name", "mobile", "email", "address", "username",
 
 
 def get_setting(key, default=""):
+    # Prefer DB-backed settings when available
+    try:
+        if _db.is_enabled():
+            return _db.get_setting(key, default)
+    except Exception:
+        pass
+
     rows = read_rows(SETTINGS_FILE)
     for r in rows:
         if r.get("key") == key:
@@ -69,15 +77,16 @@ def login():
                 flash("Please enter your name and password.", "danger")
                 return redirect(url_for("auth.login"))
 
-            clients = read_rows(CLIENTS_FILE)
             matched = None
-
-            for c in clients:
-                # Compare against the stored client name
-                c_name = str(c.get("name", "")).strip().lower()
-                if login_name.lower() == c_name:
-                    matched = c
-                    break
+            if _db.is_enabled():
+                matched = _db.get_client_by_name(login_name)
+            else:
+                clients = read_rows(CLIENTS_FILE)
+                for c in clients:
+                    c_name = str(c.get("name", "")).strip().lower()
+                    if login_name.lower() == c_name:
+                        matched = c
+                        break
 
             if matched:
                 if str(matched.get("status", "Active")).lower() != "active":
@@ -125,14 +134,25 @@ def signup():
         clients = read_rows(CLIENTS_FILE)
 
         # Ensure single registration check: no duplicate email or mobile
-        for c in clients:
-            if str(c.get("email", "")).strip().lower() == email:
-                flash("An account with this email already exists. Please log in.", "warning")
-                return redirect(url_for("auth.login"))
+        # Check duplicates (DB or Excel)
+        if _db.is_enabled():
+            # naive check via excel fallback list to keep behavior consistent
+            for c in clients:
+                if str(c.get("email", "")).strip().lower() == email:
+                    flash("An account with this email already exists. Please log in.", "warning")
+                    return redirect(url_for("auth.login"))
+                if str(c.get("mobile", "")).strip() == mobile:
+                    flash("An account with this mobile number already exists. Please log in.", "warning")
+                    return redirect(url_for("auth.login"))
+        else:
+            for c in clients:
+                if str(c.get("email", "")).strip().lower() == email:
+                    flash("An account with this email already exists. Please log in.", "warning")
+                    return redirect(url_for("auth.login"))
 
-            if str(c.get("mobile", "")).strip() == mobile:
-                flash("An account with this mobile number already exists. Please log in.", "warning")
-                return redirect(url_for("auth.login"))
+                if str(c.get("mobile", "")).strip() == mobile:
+                    flash("An account with this mobile number already exists. Please log in.", "warning")
+                    return redirect(url_for("auth.login"))
 
         # Generate new Client ID
         client_id = generate_id("C", clients, "client_id")
@@ -152,13 +172,15 @@ def signup():
             "reg_date": today_str(),
         }
 
-        clients.append(new_client)
-        write_rows(CLIENTS_FILE, clients, CLIENT_HEADERS)
-
-        # Auto-login the new client immediately after signup
-        user = ClientUser(new_client)
-        login_user(user)
-
+        if _db.is_enabled():
+            _db.create_client(new_client)
+            user = ClientUser(new_client)
+            login_user(user)
+        else:
+            clients.append(new_client)
+            write_rows(CLIENTS_FILE, clients, CLIENT_HEADERS)
+            user = ClientUser(new_client)
+            login_user(user)
         flash(f"Account created successfully! Welcome, {name}.", "success")
         return redirect(url_for("client.dashboard"))
 
@@ -204,31 +226,47 @@ def change_password():
                 flash("Current password incorrect.", "danger")
                 return redirect(url_for("auth.change_password"))
 
-            # Update password
-            rows = read_rows(SETTINGS_FILE)
-            for r in rows:
-                if r["key"] == "admin_password_hash":
-                    r["value"] = generate_password_hash(new_pw)
-                    break
-            write_rows(SETTINGS_FILE, rows, SETTINGS_HEADERS)
+            # Update password (DB or Excel)
+            if _db.is_enabled():
+                _db.set_setting("admin_password_hash", generate_password_hash(new_pw))
+            else:
+                rows = read_rows(SETTINGS_FILE)
+                for r in rows:
+                    if r["key"] == "admin_password_hash":
+                        r["value"] = generate_password_hash(new_pw)
+                        break
+                write_rows(SETTINGS_FILE, rows, SETTINGS_HEADERS)
+
             flash("Admin password updated successfully.", "success")
             return redirect(url_for("admin.dashboard"))
 
         else:  # Client password update
-            clients = read_rows(CLIENTS_FILE)
-            updated = False
-            for c in clients:
-                if c.get("client_id") == current_user.id:
-                    if not check_password_hash(str(c.get("password", "")), old_pw):
-                        flash("Current password incorrect.", "danger")
-                        return redirect(url_for("auth.change_password"))
-                    c["password"] = generate_password_hash(new_pw)
-                    updated = True
-                    break
-
-            if updated:
-                write_rows(CLIENTS_FILE, clients, CLIENT_HEADERS)
+            if _db.is_enabled():
+                # Verify current password via DB
+                client = _db.get_client_by_name(current_user.name)
+                if not client or not _db:
+                    flash("Current password incorrect.", "danger")
+                    return redirect(url_for("auth.change_password"))
+                if not check_password_hash(str(client.get("password", "")), old_pw):
+                    flash("Current password incorrect.", "danger")
+                    return redirect(url_for("auth.change_password"))
+                _db.update_client_password(current_user.id, generate_password_hash(new_pw))
                 flash("Your password has been updated.", "success")
+            else:
+                clients = read_rows(CLIENTS_FILE)
+                updated = False
+                for c in clients:
+                    if c.get("client_id") == current_user.id:
+                        if not check_password_hash(str(c.get("password", "")), old_pw):
+                            flash("Current password incorrect.", "danger")
+                            return redirect(url_for("auth.change_password"))
+                        c["password"] = generate_password_hash(new_pw)
+                        updated = True
+                        break
+
+                if updated:
+                    write_rows(CLIENTS_FILE, clients, CLIENT_HEADERS)
+                    flash("Your password has been updated.", "success")
             return redirect(url_for("client.dashboard"))
 
     return render_template("change_password.html")

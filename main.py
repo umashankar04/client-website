@@ -30,6 +30,7 @@ INVOICE_HEADERS  = ["invoice_no","serial","client_id","client_name","date","tota
 REPORTS_HEADERS  = ["report_id","type","generated_on","file_path"]
 
 from models.users import AdminUser, ClientUser  # noqa: F401 – re-exported for Flask-Login
+from utils import db as _db
 
 # ══════════════════════════════════════════════════════════════════════════════
 # INITIALISE DIRECTORIES AND EXCEL FILES
@@ -135,6 +136,14 @@ def create_app():
     setup_excel_files()
     setup_default_services()
     setup_admin_credentials()
+
+    # Initialize DB if DATABASE_URL is configured (optional Supabase/Postgres)
+    try:
+        if _db.is_enabled():
+            _db.init_db()
+            print("  ✓ Database initialized.")
+    except Exception as e:
+        print("  ! Database init failed:", e)
 
     app = Flask(__name__)
     app.secret_key = config.SECRET_KEY
