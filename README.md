@@ -8,20 +8,19 @@ python main.py
 
 ## Deploy permanently
 
-This app needs a Python host such as Render.
+This app requires a Python host (Render, Railway, Heroku, DigitalOcean, Azure, etc.) that supports running Python web services. Typical settings:
 
-### Render setup
+- Build command: `pip install -r requirements.txt`
+- Start command: `gunicorn wsgi:app`
 
-1. Create a new Web Service from this GitHub repo.
-2. Use the included `render.yaml` or set:
-   - Build: `pip install -r requirements.txt`
-   - Start: `gunicorn wsgi:app`
-3. Leave auto-deploy enabled so pushes to `main` publish automatically.
+Connect your Git provider to the host and enable auto-deploys from `main` to publish updates automatically.
 
-The repo is public, so the hosted site can also be public.
+### Using Supabase (for Vercel or other serverless deployments)
 
-### Deploy from GitHub Actions
+This project can use a Postgres database instead of Excel files. To enable:
 
-1. Create a Render deploy hook for this service.
-2. Add the hook URL as a GitHub secret named `RENDER_DEPLOY_HOOK_URL`.
-3. Push to `main` or run the `Deploy` workflow manually.
+1. Create a Supabase project and note the Postgres connection string.
+2. In GitHub repository Settings → Secrets → Actions, add `DATABASE_URL` with the connection string.
+3. The app will auto-create required tables on startup via SQLAlchemy. You can deploy to Vercel only after moving storage (uploads, invoices) to object storage (Supabase Storage or S3).
+
+Note: Switching to a DB requires configuring persistent storage for uploaded files. I can help migrate uploads and other data if you want.
