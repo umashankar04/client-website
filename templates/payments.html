@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Payments{% endblock %}
+{% block page_title %}💰 Payments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Payment Records</div>
+    <div class="page-header-sub">{{ payments | length }} payment(s) recorded</div>
+  </div>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPayModal">
+    <i class="bi bi-cash-coin me-2"></i>Record Payment
+  </button>
+</div>
+
+<!-- Filter -->
+<form method="GET" class="filter-bar">
+  <input type="text" name="q" class="form-control" placeholder="🔍 Search client or invoice…" value="{{ search }}">
+  <select name="status" class="form-select">
+    <option value="">All Status</option>
+    <option {% if f_status=='paid'    %}selected{% endif %} value="paid">Paid</option>
+    <option {% if f_status=='partial' %}selected{% endif %} value="partial">Partial</option>
+    <option {% if f_status=='pending' %}selected{% endif %} value="pending">Pending</option>
+  </select>
+  <button class="btn btn-primary"><i class="bi bi-funnel-fill"></i></button>
+  <a href="{{ url_for('admin.payments') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+</form>
+
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th><th>Client</th><th>Invoice #</th><th>Total</th>
+        <th>Paid</th><th>Balance</th><th>Date</th><th>Method</th><th>Status</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td><span class="fw-600 text-accent">{{ p.payment_id }}</span></td>
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar-sm">{{ (p.client_name or '?')[0]|upper }}</div>
+            {{ p.client_name }}
+          </div>
+        </td>
+        <td>{{ p.invoice_no or '—' }}</td>
+        <td>₹{{ "{:,.2f}".format(p.total_amount | float) }}</td>
+        <td class="text-success fw-600">₹{{ "{:,.2f}".format(p.amount_paid | float) }}</td>
+        <td class="{% if p.balance | float > 0 %}text-warning{% else %}text-success{% endif %} fw-600">
+          ₹{{ "{:,.2f}".format(p.balance | float) }}
+        </td>
+        <td>{{ p.payment_date | string | truncate(10,True,'') }}</td>
+        <td>{{ p.payment_method }}</td>
+        <td>
+          {% set st = (p.status or '') | lower %}
+          <span class="status-pill {% if st=='paid' %}badge-paid{% elif st=='partial' %}badge-partial{% else %}badge-pending{% endif %}">
+            {{ p.status }}
+          </span>
+        </td>
+        <td>
+          <form method="POST" action="{{ url_for('admin.delete_payment', pay_id=p.payment_id) }}"
+                onsubmit="return confirm('Delete payment {{ p.payment_id }}?')">
+            <button class="btn btn-sm btn-danger"><i class="bi bi-trash-fill"></i></button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="10" class="text-center py-5 text-muted">
+        <i class="bi bi-cash-coin fs-2 d-block mb-2 opacity-25"></i>No payments recorded yet.
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Totals summary -->
+{% if payments %}
+<div class="row g-3 mt-2">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.2f}".format(payments | sum(attribute='amount_paid') | float) }}</div>
+        <div class="stat-label">Total Collected</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="bi bi-hourglass-split"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.2f}".format(payments | sum(attribute='balance') | float) }}</div>
+        <div class="stat-label">Total Balance</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="bi bi-receipt"></i></div>
+      <div>
+        <div class="stat-value">{{ payments | length }}</div>
+        <div class="stat-label">Total Transactions</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Add Payment Modal -->
+<div class="modal fade" id="addPayModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="bi bi-cash-coin me-2"></i>Record Payment</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{{ url_for('admin.add_payment') }}" id="payForm">
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Client *</label>
+              <select name="client_id" class="form-select" required>
+                <option value="">— Select Client —</option>
+                {% for c in clients %}
+                <option value="{{ c.client_id }}">{{ c.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Invoice No.</label>
+              <input type="text" name="invoice_no" class="form-control" placeholder="e.g. INV001">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Total Bill Amount (₹) *</label>
+              <input type="number" name="total_amount" id="totalAmtInp" class="form-control"
+                     step="0.01" min="0" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Amount Paid Now (₹) *</label>
+              <input type="number" name="amount_paid" id="amtPaidInp" class="form-control"
+                     step="0.01" min="0" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Remaining Balance</label>
+              <div class="form-control text-warning fw-700" id="balanceDisplay">₹ 0.00</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Payment Date *</label>
+              <input type="date" name="payment_date" class="form-control"
+                     value="{{ '' }}" required
+                     id="payDateInp">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Payment Method</label>
+              <select name="payment_method" class="form-select">
+                <option>UPI</option>
+                <option>Cash</option>
+                <option>Bank Transfer</option>
+                <option>Cheque</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Transaction ID / Reference</label>
+              <input type="text" name="txn_id" class="form-control" placeholder="UPI Ref / Txn ID">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-circle me-1"></i>Record Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Set today's date
+  document.getElementById('payDateInp').value = new Date().toISOString().split('T')[0];
+
+  // Live balance calculation
+  function updateBalance() {
+    const total = parseFloat(document.getElementById('totalAmtInp').value) || 0;
+    const paid  = parseFloat(document.getElementById('amtPaidInp').value)  || 0;
+    const bal   = Math.max(0, total - paid);
+    document.getElementById('balanceDisplay').textContent = '₹ ' + bal.toFixed(2);
+    document.getElementById('balanceDisplay').className =
+      'form-control fw-700 ' + (bal > 0 ? 'text-warning' : 'text-success');
+  }
+  document.getElementById('totalAmtInp').addEventListener('input', updateBalance);
+  document.getElementById('amtPaidInp').addEventListener('input', updateBalance);
+</script>
+{% endblock %}

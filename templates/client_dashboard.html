@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block page_title %}🎬 My Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Welcome, {{ current_user.name }} 👋</div>
+    <div class="page-header-sub">Here is your work & payment summary</div>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="bi bi-journal-code"></i></div>
+      <div>
+        <div class="stat-value">{{ total_work }}</div>
+        <div class="stat-label">Work Orders</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-receipt"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(total_billed) }}</div>
+        <div class="stat-label">Total Billed</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(total_paid) }}</div>
+        <div class="stat-label">Amount Paid</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon {% if balance > 0 %}orange{% else %}green{% endif %}">
+        <i class="bi bi-{% if balance > 0 %}hourglass-split{% else %}check2-all{% endif %}"></i>
+      </div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(balance) }}</div>
+        <div class="stat-label">Balance Due</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Work History -->
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-journal-code me-2 text-accent"></i>Recent Work Orders</div>
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr><th>Serial</th><th>Date</th><th>Service</th><th>Total</th><th>Invoice</th></tr>
+          </thead>
+          <tbody>
+            {% for w in recent_works %}
+            <tr>
+              <td class="fw-600 text-accent">{{ w.serial }}</td>
+              <td>{{ w.date | string | truncate(10,True,'') }}</td>
+              <td>{{ w.service_name }}</td>
+              <td class="fw-600 text-success">₹{{ "{:,.2f}".format(w.total | float) }}</td>
+              <td>
+                <a href="{{ url_for('client.download_invoice', serial=w.serial) }}"
+                   class="btn btn-sm btn-primary">
+                  <i class="bi bi-file-earmark-pdf-fill me-1"></i>PDF
+                </a>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center py-4 text-muted">No work orders yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment History + QR -->
+  <div class="col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header"><i class="bi bi-cash-coin me-2 text-accent"></i>Payment History</div>
+      <div class="card-body">
+        {% for p in recent_payments %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}"
+             style="border-color:var(--border)!important;font-size:13px">
+          <div>
+            <div class="fw-600">{{ p.payment_method }}</div>
+            <div class="text-muted" style="font-size:11px">{{ p.payment_date | string | truncate(10,True,'') }}</div>
+          </div>
+          <div class="text-end">
+            <div class="fw-700 text-success">₹{{ "{:,.2f}".format(p.amount_paid | float) }}</div>
+            <span class="status-pill {% if (p.status or '')|lower == 'paid' %}badge-paid{% elif (p.status or '')|lower == 'partial' %}badge-partial{% else %}badge-pending{% endif %}" style="font-size:10px">
+              {{ p.status }}
+            </span>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state py-3">
+          <i class="bi bi-cash-coin"></i><p>No payments recorded yet.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Contact / QR -->
+    <div class="card">
+      <div class="card-header"><i class="bi bi-person-lines-fill me-2 text-accent"></i>Contact & Pay</div>
+      <div class="card-body text-center">
+        {% if qr_exists %}
+        <img src="/uploads/qr.png" alt="Payment QR"
+             class="qr-preview mb-3" style="max-width:140px">
+        <p style="font-size:12px;color:var(--text-muted)">Scan to pay via UPI (GPay / PhonePe / Paytm)</p>
+        {% endif %}
+        <div class="d-flex flex-column gap-2 mt-2">
+          <a href="tel:{{ contact_phone }}" class="btn btn-outline-secondary">
+            <i class="bi bi-telephone-fill me-2"></i>{{ contact_phone }}
+          </a>
+          <a href="{{ contact_insta }}" target="_blank" class="btn btn-outline-secondary">
+            <i class="bi bi-instagram me-2"></i>@pradhan04_
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Client Dashboard - VEMS{% endblock %}
+{% block page_title %}Billing Portal Overview{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Work Entries -->
+    <div class="col-12 col-md-4">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Projects</div>
+                <div class="stat-value">{{ total_work }}</div>
+            </div>
+            <div class="stat-icon primary">
+                <i class="fa-solid fa-clapperboard"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Amount -->
+    <div class="col-12 col-md-4">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Pending Balance</div>
+                <div class="stat-value text-danger">₹{{ "%.2f"|format(pending_amount) }}</div>
+            </div>
+            <div class="stat-icon danger">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paid Amount -->
+    <div class="col-12 col-md-4">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Paid</div>
+                <div class="stat-value text-success">₹{{ "%.2f"|format(paid_amount) }}</div>
+            </div>
+            <div class="stat-icon success">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Work & Payment History -->
+    <div class="col-12 col-lg-8">
+        <!-- Work History Table -->
+        <div class="content-card mb-4">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-folder-open text-primary me-2"></i>My Project Work History</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Serial #</th>
+                            <th>Date</th>
+                            <th>Service Description</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th class="text-end">Invoice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if works %}
+                            {% for w in works %}
+                                <tr>
+                                    <td><code>{{ w['Serial Number'] }}</code></td>
+                                    <td>{{ w['Date'] }}</td>
+                                    <td>{{ w['Service Type'] }}</td>
+                                    <td>{{ w['Quantity'] }}</td>
+                                    <td class="font-weight-bold">₹{{ "%.2f"|format(w['Total']|float) }}</td>
+                                    <td>
+                                        {% if w['Status'] == 'Paid' %}
+                                            <span class="badge-status paid">Paid</span>
+                                        {% elif w['Status'] == 'Partial Payment' or w['Status'] == 'Partial' %}
+                                            <span class="badge-status partial">Partial</span>
+                                        {% else %}
+                                            <span class="badge-status pending">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('client.download_invoice', work_serial=w['Serial Number']) }}" class="btn btn-sm btn-outline-primary" title="Download Invoice PDF">
+                                            <i class="fa-solid fa-file-pdf"></i> PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted-custom py-4">No project records found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment logs -->
+        <div class="content-card">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-wallet text-success me-2"></i>My Payment History</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Payment ID</th>
+                            <th>Work Serial</th>
+                            <th>Date</th>
+                            <th>Method</th>
+                            <th>Transaction ID</th>
+                            <th>Amount Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if payments %}
+                            {% for p in payments %}
+                                <tr>
+                                    <td><code>{{ p['Payment ID'] }}</code></td>
+                                    <td><code>{{ p['Work Serial Number'] }}</code></td>
+                                    <td>{{ p['Payment Date'] }}</td>
+                                    <td><span class="badge bg-secondary">{{ p['Payment Method'] }}</span></td>
+                                    <td>{{ p['Transaction ID'] or 'N/A' }}</td>
+                                    <td class="font-weight-bold text-success">₹{{ "%.2f"|format(p['Amount Paid']|float) }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted-custom py-4">No payment logs recorded.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Payment QR Code & Support Widget -->
+    <div class="col-12 col-lg-4">
+        <!-- QR Code Card -->
+        <div class="content-card text-center mb-4">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-qrcode text-warning me-2"></i>Pay via UPI</h5>
+            <p class="small text-muted-custom mb-3">Scan this code to settle outstanding balances.</p>
+            
+            {% if qr_code %}
+                <div class="p-3 bg-light rounded d-inline-block border border-secondary border-opacity-25 mb-3">
+                    <img src="{{ url_for('static', filename='uploads/' + qr_code.split('/')[-1]) }}" alt="UPI Payment QR Code" style="max-height: 180px; max-width: 180px; object-fit: contain;">
+                </div>
+                <div class="small">
+                    <a href="{{ url_for('static', filename='uploads/' + qr_code.split('/')[-1]) }}" download="VEMS_Payment_QR.png" class="btn btn-sm btn-outline-warning w-100">
+                        <i class="fa-solid fa-download me-1"></i> Download QR Image
+                    </a>
+                </div>
+            {% else %}
+                <div class="py-5 text-muted-custom border border-dashed rounded mb-3">
+                    <i class="fa-solid fa-qrcode fs-1 mb-2 d-block"></i>
+                    <span>No QR Code Uploaded by Admin</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Contact Section -->
+        <div class="content-card text-center">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-headset text-info me-2"></i>Need Help?</h5>
+            <p class="small text-muted-custom mb-4">Have questions about an entry or payment? Contact us directly.</p>
+            
+            <div class="d-grid gap-2">
+                <a href="https://wa.me/{{ contact_phone }}" target="_blank" class="btn btn-outline-success py-2 d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa-brands fa-whatsapp fs-5"></i>
+                    <span>WhatsApp: {{ contact_phone }}</span>
+                </a>
+                <a href="tel:{{ contact_phone }}" class="btn btn-outline-secondary py-2 d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa-solid fa-phone fs-5"></i>
+                    <span>Call Us: +91 {{ contact_phone }}</span>
+                </a>
+                <a href="{{ insta_link }}" target="_blank" class="btn btn-outline-primary py-2 d-flex align-items-center justify-content-center gap-2">
+                    <i class="fa-brands fa-instagram fs-5"></i>
+                    <span>Instagram Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

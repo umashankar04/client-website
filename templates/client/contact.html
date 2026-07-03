@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact & Support - VEMS{% endblock %}
+{% block page_title %}Get in Touch{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="content-card text-center py-4">
+            <div class="text-primary mb-3" style="font-size: 3rem;">
+                <i class="fa-solid fa-headset"></i>
+            </div>
+            
+            <h4 class="font-weight-bold mb-2" style="font-family: var(--font-heading);">Client Support Desk</h4>
+            <p class="small text-muted-custom mb-4">Feel free to reach out to us for billing clarifications, custom pricing setups, or editing corrections.</p>
+            
+            <div class="d-flex flex-column gap-3 max-width-md mx-auto">
+                <!-- Phone Call -->
+                <div class="p-3 bg-body rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-between text-start">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="fs-4 text-primary"><i class="fa-solid fa-phone"></i></div>
+                        <div>
+                            <div class="font-weight-bold small">Call support</div>
+                            <div class="text-muted-custom small">+91 {{ contact_phone }}</div>
+                        </div>
+                    </div>
+                    <a href="tel:{{ contact_phone }}" class="btn btn-sm btn-outline-secondary">Call Now</a>
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="p-3 bg-body rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-between text-start">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="fs-4 text-success"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div>
+                            <div class="font-weight-bold small">WhatsApp Chat</div>
+                            <div class="text-muted-custom small">Direct instant messaging</div>
+                        </div>
+                    </div>
+                    <a href="https://wa.me/{{ contact_phone }}" target="_blank" class="btn btn-sm btn-success text-dark font-weight-bold">Chat Live</a>
+                </div>
+
+                <!-- Instagram -->
+                <div class="p-3 bg-body rounded border border-secondary border-opacity-10 d-flex align-items-center justify-content-between text-start">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="fs-4 text-danger"><i class="fa-brands fa-instagram"></i></div>
+                        <div>
+                            <div class="font-weight-bold small">Instagram Profile</div>
+                            <div class="text-muted-custom small">@{{ insta_link.split('/')[-1] }}</div>
+                        </div>
+                    </div>
+                    <a href="{{ insta_link }}" target="_blank" class="btn btn-sm btn-outline-primary">Follow Us</a>
+                </div>
+            </div>
+            
+            <div class="mt-4 text-muted-custom small">
+                Operating Hours: 10:00 AM to 8:00 PM (Monday - Saturday)
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

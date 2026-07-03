@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments Logs - VEMS{% endblock %}
+{% block page_title %}Payment Transaction Log{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <!-- Filter Bar -->
+    <form method="GET" action="{{ url_for('admin.payments') }}" class="row g-3 mb-4 align-items-end">
+        <div class="col-12 col-md-3">
+            <label class="form-label small text-muted-custom">Work Serial Number</label>
+            <input type="text" class="form-control" name="work_serial" placeholder="e.g. W0001" value="{{ selected_serial }}">
+        </div>
+        <div class="col-12 col-md-3">
+            <label class="form-label small text-muted-custom">Payment Method</label>
+            <select class="form-select" name="method">
+                <option value="">-- All Methods --</option>
+                <option value="UPI" {% if selected_method == 'UPI' %}selected{% endif %}>UPI</option>
+                <option value="Cash" {% if selected_method == 'Cash' %}selected{% endif %}>Cash</option>
+                <option value="Bank Transfer" {% if selected_method == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                <option value="Other" {% if selected_method == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-secondary flex-grow-1"><i class="fa-solid fa-filter me-1"></i>Filter</button>
+            <a href="{{ url_for('admin.payments') }}" class="btn btn-outline-danger" title="Clear Filters"><i class="fa-solid fa-filter-circle-xmark"></i></a>
+        </div>
+    </form>
+
+    <!-- Payments Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small mb-0">
+            <thead>
+                <tr>
+                    <th>Payment ID</th>
+                    <th>Work Serial</th>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Transaction ID</th>
+                    <th>Amount Paid</th>
+                    <th>Remaining Balance</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if payments %}
+                    {% for p in payments %}
+                        <tr>
+                            <td><code>{{ p['Payment ID'] }}</code></td>
+                            <td><code>{{ p['Work Serial Number'] }}</code></td>
+                            <td>{{ p['Payment Date'] }}</td>
+                            <td><span class="badge bg-secondary">{{ p['Payment Method'] }}</span></td>
+                            <td>{{ p['Transaction ID'] or 'N/A' }}</td>
+                            <td class="font-weight-bold text-success">₹{{ "%.2f"|format(p['Amount Paid']|float) }}</td>
+                            <td class="font-weight-bold">₹{{ "%.2f"|format(p['Remaining Balance']|float) }}</td>
+                            <td class="text-end">
+                                <form action="{{ url_for('admin.delete_payment', payment_id=p['Payment ID']) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to void this payment transaction? The project billing status will be updated.');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Void Transaction">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted-custom py-4">No payment logs found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

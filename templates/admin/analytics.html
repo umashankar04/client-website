@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Overview - VEMS{% endblock %}
+{% block page_title %}Business Analytics{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Chart 1: Monthly Earnings (Bar) -->
+    <div class="col-12 col-lg-6">
+        <div class="content-card">
+            <h5 class="card-title mb-4" style="font-family: var(--font-heading);"><i class="fa-solid fa-chart-column text-primary me-2"></i>Monthly Earnings (INR)</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="monthlyEarningsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart 2: Service-wise Revenue Distribution (Polar Area / Pie) -->
+    <div class="col-12 col-lg-6">
+        <div class="content-card">
+            <h5 class="card-title mb-4" style="font-family: var(--font-heading);"><i class="fa-solid fa-chart-pie text-success me-2"></i>Service Revenue Distribution</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="serviceEarningsChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart 3: Client Revenue Rankings (Horizontal Bar) -->
+    <div class="col-12 col-lg-6">
+        <div class="content-card">
+            <h5 class="card-title mb-4" style="font-family: var(--font-heading);"><i class="fa-solid fa-ranking-star text-warning me-2"></i>Client Revenue Contribution</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="clientRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart 4: Pending vs Paid Payments (Doughnut) -->
+    <div class="col-12 col-lg-6">
+        <div class="content-card">
+            <h5 class="card-title mb-4" style="font-family: var(--font-heading);"><i class="fa-solid fa-wallet text-danger me-2"></i>Billing & Outstanding Ratio</h5>
+            <div style="height: 300px; position: relative;">
+                <canvas id="paymentsRatioChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const isDark = document.body.classList.contains('dark-mode');
+        const gridColor = isDark ? '#243049' : '#e2e8f0';
+        const labelColor = isDark ? '#9ca3af' : '#64748b';
+        
+        // 1. Monthly Earnings Chart
+        fetch('/api/charts/monthly-earnings')
+            .then(res => res.json())
+            .then(data => {
+                new Chart(document.getElementById('monthlyEarningsChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Monthly Earnings (₹)',
+                            data: data.values,
+                            backgroundColor: '#6366f1',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: labelColor }
+                            },
+                            y: {
+                                grid: { color: gridColor },
+                                ticks: { color: labelColor }
+                            }
+                        }
+                    }
+                });
+            });
+
+        // 2. Service Earnings Chart
+        fetch('/api/charts/service-earnings')
+            .then(res => res.json())
+            .then(data => {
+                new Chart(document.getElementById('serviceEarningsChart'), {
+                    type: 'polarArea',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            data: data.values,
+                            backgroundColor: [
+                                '#6366f1', '#10b981', '#f59e0b', '#ec4899', 
+                                '#3b82f6', '#8b5cf6', '#ef4444', '#14b8a6', '#f97316'
+                            ],
+                            borderColor: isDark ? '#161e2e' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: labelColor, font: { family: 'Inter', size: 10 } }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                grid: { color: gridColor },
+                                angleLines: { color: gridColor },
+                                ticks: { display: false }
+                            }
+                        }
+                    }
+                });
+            });
+
+        // 3. Client Revenue Chart
+        fetch('/api/charts/client-revenue')
+            .then(res => res.json())
+            .then(data => {
+                new Chart(document.getElementById('clientRevenueChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Total Revenue Generated (₹)',
+                            data: data.values,
+                            backgroundColor: '#10b981',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: gridColor },
+                                ticks: { color: labelColor }
+                            },
+                            y: {
+                                grid: { display: false },
+                                ticks: { color: labelColor }
+                            }
+                        }
+                    }
+                });
+            });
+
+        // 4. Payments Ratio Chart
+        fetch('/api/charts/payment-ratio')
+            .then(res => res.json())
+            .then(data => {
+                new Chart(document.getElementById('paymentsRatioChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Paid', 'Pending', 'Partial Payment'],
+                        datasets: [{
+                            data: [data.paid, data.pending, data.partial],
+                            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: isDark ? '#161e2e' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: { color: labelColor, font: { family: 'Inter', size: 12 } }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            });
+    });
+</script>
+{% endblock %}

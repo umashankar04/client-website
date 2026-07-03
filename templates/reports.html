@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}📈 Reports{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Business Reports</div>
+    <div class="page-header-sub">{{ total_entries }} entries · ₹{{ "{:,.2f}".format(total_amount) }} total</div>
+  </div>
+  <a href="{{ url_for('admin.export_excel') }}" class="btn btn-success">
+    <i class="bi bi-file-earmark-excel-fill me-2"></i>Export Excel
+  </a>
+</div>
+
+<!-- Report Type Tabs -->
+<div class="d-flex gap-2 flex-wrap mb-4">
+  {% for rtype, label in [('daily','Today'),('weekly','This Week'),('monthly','This Month'),('yearly','This Year')] %}
+  <a href="{{ url_for('admin.reports', type=rtype) }}"
+     class="btn {% if report_type == rtype %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+    <i class="bi bi-calendar{% if rtype=='daily' %}-day{% elif rtype=='weekly' %}-week{% elif rtype=='monthly' %}-month{% else %}-range{% endif %}-fill me-1"></i>
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="bi bi-journal-code"></i></div>
+      <div>
+        <div class="stat-value">{{ total_entries }}</div>
+        <div class="stat-label">Total Entries</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(total_amount) }}</div>
+        <div class="stat-label">Total Revenue</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <div class="stat-value">{{ works | map(attribute='client_id') | list | count }}</div>
+        <div class="stat-label">Work Entries</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="bi bi-bar-chart-fill"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(total_amount / total_entries if total_entries > 0 else 0) }}</div>
+        <div class="stat-label">Avg per Entry</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Work entries table -->
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Serial</th><th>Date</th><th>Client</th><th>Service</th>
+        <th>Qty</th><th>Price</th><th>Total</th><th>Notes</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in works %}
+      <tr>
+        <td><span class="fw-600 text-accent">{{ w.serial }}</span></td>
+        <td>{{ w.date | string | truncate(10,True,'') }}</td>
+        <td>{{ w.client_name }}</td>
+        <td>{{ w.service_name }}</td>
+        <td>{{ w.quantity }}</td>
+        <td>₹{{ "{:,.2f}".format(w.price | float) }}</td>
+        <td class="fw-700 text-success">₹{{ "{:,.2f}".format(w.total | float) }}</td>
+        <td class="text-muted" style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ w.notes or '—' }}</td>
+        <td>
+          {% set st = (w.status or '') | lower %}
+          <span class="status-pill {% if st == 'completed' %}badge-paid{% elif st == 'cancelled' %}badge-pending{% else %}badge-partial{% endif %}">
+            {{ w.status }}
+          </span>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9" class="text-center py-5 text-muted">
+        <i class="bi bi-bar-chart-steps fs-2 d-block mb-2 opacity-25"></i>No entries for this period.
+      </td></tr>
+      {% endfor %}
+    </tbody>
+    {% if works %}
+    <tfoot>
+      <tr style="background:var(--bg3)">
+        <td colspan="6" class="text-end fw-700 pe-3">Grand Total:</td>
+        <td class="fw-700 text-success">₹{{ "{:,.2f}".format(total_amount) }}</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+    {% endif %}
+  </table>
+</div>
+{% endblock %}

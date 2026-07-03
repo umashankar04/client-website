@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+
+{% block title %}Earnings Reports - VEMS{% endblock %}
+{% block page_title %}Reports & Exports{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Left Column: Report Controls -->
+    <div class="col-12 col-lg-4">
+        <div class="content-card">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-file-invoice-dollar text-primary me-2"></i>Configure Report</h5>
+            
+            <form method="GET" action="{{ url_for('admin.reports') }}">
+                <div class="mb-3">
+                    <label for="report-type" class="form-label small text-muted-custom">Report Scope</label>
+                    <select class="form-select" id="report-type" name="report_type" required>
+                        <option value="daily" {% if report_type == 'daily' %}selected{% endif %}>Daily Summary</option>
+                        <option value="weekly" {% if report_type == 'weekly' %}selected{% endif %}>Weekly Summary</option>
+                        <option value="monthly" {% if report_type == 'monthly' %}selected{% endif %}>Monthly Summary</option>
+                        <option value="yearly" {% if report_type == 'yearly' %}selected{% endif %}>Yearly Summary</option>
+                        <option value="client-wise" {% if report_type == 'client-wise' %}selected{% endif %}>Client-wise Report</option>
+                        <option value="service-wise" {% if report_type == 'service-wise' %}selected{% endif %}>Service-wise Report</option>
+                    </select>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label for="start-date" class="form-label small text-muted-custom">Start Date</label>
+                        <input type="date" class="form-control" id="start-date" name="start_date" value="{{ start_date }}" required>
+                    </div>
+                    <div class="col-6">
+                        <label for="end-date" class="form-label small text-muted-custom">End Date</label>
+                        <input type="date" class="form-control" id="end-date" name="end_date" value="{{ end_date }}" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3" id="client-select-group" style="display: {% if report_type == 'client-wise' %}block{% else %}none{% endif %};">
+                    <label for="client-id" class="form-label small text-muted-custom">Client Account</label>
+                    <select class="form-select" id="client-id" name="client_id">
+                        <option value="">-- Choose Client --</option>
+                        {% for client in clients %}
+                            <option value="{{ client['Client ID'] }}" {% if selected_client == client['Client ID'] %}selected{% endif %}>
+                                {{ client['Name'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4" id="service-select-group" style="display: {% if report_type == 'service-wise' %}block{% else %}none{% endif %};">
+                    <label for="service-id" class="form-label small text-muted-custom">Service Item</label>
+                    <select class="form-select" id="service-id" name="service_id">
+                        <option value="">-- Choose Service --</option>
+                        {% for svc in services %}
+                            <option value="{{ svc['Service ID'] }}" {% if selected_service == svc['Service ID'] %}selected{% endif %}>
+                                {{ svc['Name'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary-custom w-100 mb-2">
+                    <i class="fa-solid fa-chart-line me-1"></i> Generate Preview
+                </button>
+            </form>
+            
+            {% if records %}
+                <hr class="my-4" style="border-color: var(--border-color);">
+                <h6 class="small text-muted-custom mb-3">Export Options</h6>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin.export_report', format='pdf', report_type=report_type, start_date=start_date, end_date=end_date, client_id=selected_client, service_id=selected_service) }}" class="btn btn-outline-danger flex-fill">
+                        <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                    </a>
+                    <a href="{{ url_for('admin.export_report', format='excel', report_type=report_type, start_date=start_date, end_date=end_date, client_id=selected_client, service_id=selected_service) }}" class="btn btn-outline-success flex-fill">
+                        <i class="fa-solid fa-file-excel me-1"></i> Excel
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Right Column: Financial Summary & Preview -->
+    <div class="col-12 col-lg-8">
+        {% if records %}
+            <!-- Summary Dashboard -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3">
+                        <div>
+                            <div class="stat-label small">Projects</div>
+                            <div class="stat-value fs-4">{{ total_projects }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3">
+                        <div>
+                            <div class="stat-label small">Gross Total</div>
+                            <div class="stat-value fs-4 text-primary">₹{{ "%.2f"|format(total_earnings) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3">
+                        <div>
+                            <div class="stat-label small">Paid</div>
+                            <div class="stat-value fs-4 text-success">₹{{ "%.2f"|format(total_paid) }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-card p-3">
+                        <div>
+                            <div class="stat-label small">Pending</div>
+                            <div class="stat-value fs-4 text-danger">₹{{ "%.2f"|format(total_pending) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HTML Preview -->
+            <div class="content-card">
+                <h5 class="card-title mb-3" style="font-family: var(--font-heading);">
+                    <i class="fa-solid fa-magnifying-glass-chart text-success me-2"></i>Report Preview
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle small mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Serial</th>
+                                <th>Client Name</th>
+                                <th>Service</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for w in records %}
+                                <tr>
+                                    <td>{{ w['Date'] }}</td>
+                                    <td><code>{{ w['Serial Number'] }}</code></td>
+                                    <td>{{ w['Client Name'] }}</td>
+                                    <td>{{ w['Service Type'] }}</td>
+                                    <td>{{ w['Quantity'] }}</td>
+                                    <td>₹{{ "%.2f"|format(w['Price']|float) }}</td>
+                                    <td class="font-weight-bold">₹{{ "%.2f"|format(w['Total']|float) }}</td>
+                                    <td>
+                                        {% if w['Status'] == 'Paid' %}
+                                            <span class="badge bg-success-subtle text-success small">{{ w['Status'] }}</span>
+                                        {% elif w['Status'] == 'Partial Payment' or w['Status'] == 'Partial' %}
+                                            <span class="badge bg-warning-subtle text-warning small">{{ w['Status'] }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-subtle text-danger small">{{ w['Status'] }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="content-card text-center py-5">
+                <div class="text-muted-custom fs-1 mb-3">
+                    <i class="fa-solid fa-chart-column"></i>
+                </div>
+                <h5 class="font-weight-bold" style="font-family: var(--font-heading);">No Data Generated</h5>
+                <p class="small text-muted-custom mb-0">Configure the criteria on the left and click "Generate Preview" to review activity logs.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const reportTypeSelect = document.getElementById("report-type");
+        const clientSelectGroup = document.getElementById("client-select-group");
+        const serviceSelectGroup = document.getElementById("service-select-group");
+        
+        if (reportTypeSelect) {
+            reportTypeSelect.addEventListener("change", () => {
+                const val = reportTypeSelect.value;
+                
+                // Toggle Client dropdown visibility
+                if (val === 'client-wise') {
+                    clientSelectGroup.style.display = 'block';
+                } else {
+                    clientSelectGroup.style.display = 'none';
+                }
+                
+                // Toggle Service dropdown visibility
+                if (val === 'service-wise') {
+                    serviceSelectGroup.style.display = 'block';
+                } else {
+                    serviceSelectGroup.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

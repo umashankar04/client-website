@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block page_title %}📊 Dashboard{% endblock %}
+
+{% block content %}
+{% set hour = now.strftime('%H') | int %}
+<div class="page-header">
+  <div>
+    <div class="page-header-title">Good {% if hour < 12 %}morning{% elif hour < 17 %}afternoon{% else %}evening{% endif %}, Admin 👋</div>
+    <div class="page-header-sub">Here's your business overview for today</div>
+  </div>
+</div>
+
+<!-- ── KPI Stat Cards ─────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon purple"><i class="bi bi-people-fill"></i></div>
+      <div>
+        <div class="stat-value">{{ total_clients }}</div>
+        <div class="stat-label">Total Clients</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon blue"><i class="bi bi-journal-code"></i></div>
+      <div>
+        <div class="stat-value">{{ total_projects }}</div>
+        <div class="stat-label">Work Entries</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon teal"><i class="bi bi-calendar-check-fill"></i></div>
+      <div>
+        <div class="stat-value">{{ today_work }}</div>
+        <div class="stat-label">Today's Work</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(total_paid) }}</div>
+        <div class="stat-label">Total Collected</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon orange"><i class="bi bi-hourglass-split"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(total_pending) }}</div>
+        <div class="stat-label">Pending Amount</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4 col-xl-2">
+    <div class="stat-card">
+      <div class="stat-icon green"><i class="bi bi-calendar-day-fill"></i></div>
+      <div>
+        <div class="stat-value">₹{{ "{:,.0f}".format(paid_today) }}</div>
+        <div class="stat-label">Today's Income</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Monthly & Payment Status Charts ───────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="chart-wrapper">
+      <div class="section-title mb-3"><i class="bi bi-bar-chart-fill me-2 text-accent"></i>Monthly Earnings ({{ now.strftime('%Y') }})</div>
+      <canvas id="earningsChart" height="90"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="chart-wrapper h-100 d-flex flex-column">
+      <div class="section-title mb-3"><i class="bi bi-pie-chart-fill me-2 text-accent"></i>Payment Status</div>
+      <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+        <canvas id="statusChart" style="max-height:200px"></canvas>
+      </div>
+      <div class="d-flex gap-3 mt-3 justify-content-center" style="font-size:12px">
+        <span><span class="badge-paid status-pill">●</span> Paid ({{ paid_count }})</span>
+        <span><span class="badge-pending status-pill">●</span> Pending ({{ pending_count }})</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Income Summary & Top Services ─────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-graph-up-arrow me-2 text-accent"></i>Income Summary</div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color:var(--border) !important">
+          <span class="text-muted">Today</span>
+          <span class="fw-700 text-success">₹{{ "{:,.2f}".format(paid_today) }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom" style="border-color:var(--border) !important">
+          <span class="text-muted">This Month</span>
+          <span class="fw-700 text-accent">₹{{ "{:,.2f}".format(paid_month) }}</span>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2">
+          <span class="text-muted">This Year</span>
+          <span class="fw-700" style="color:var(--info)">₹{{ "{:,.2f}".format(paid_year) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-star-fill me-2 text-accent"></i>Top Services</div>
+      <div class="card-body">
+        {% for svc_name, count in top_services %}
+        <div class="d-flex justify-content-between align-items-center py-2 {% if not loop.last %}border-bottom{% endif %}" style="border-color:var(--border) !important">
+          <span style="font-size:13px">{{ svc_name }}</span>
+          <span class="status-pill badge-active">{{ count }} job{{ 's' if count != 1 }}</span>
+        </div>
+        {% else %}
+        <div class="empty-state py-3"><i class="bi bi-collection-play"></i><p>No work entries yet</p></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Recent Work ─────────────────────────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-clock-history me-2 text-accent"></i>Recent Work Entries</span>
+    <a href="{{ url_for('admin.work') }}" class="btn btn-sm btn-outline-secondary">View All</a>
+  </div>
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Serial</th><th>Date</th><th>Client</th><th>Service</th><th>Total</th><th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for w in recent %}
+        <tr>
+          <td><span class="fw-600 text-accent">{{ w.serial }}</span></td>
+          <td>{{ w.date | string | truncate(10, True, '') }}</td>
+          <td>{{ w.client_name }}</td>
+          <td>{{ w.service_name }}</td>
+          <td class="fw-600 text-success">₹{{ "{:,.2f}".format(w.total | float) }}</td>
+          <td>
+            {% set st = (w.status or '') | lower %}
+            <span class="status-pill {% if st == 'completed' %}badge-paid{% elif st == 'pending' %}badge-pending{% else %}badge-partial{% endif %}">
+              {{ w.status or 'Pending' }}
+            </span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center py-4 text-muted">No work entries yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Quick Action Buttons -->
+<div class="d-flex gap-2 mt-4 flex-wrap">
+  <a href="{{ url_for('admin.work') }}"     class="btn btn-primary"><i class="bi bi-plus-circle-fill me-2"></i>Add Work Entry</a>
+  <a href="{{ url_for('admin.clients') }}"  class="btn btn-outline-secondary"><i class="bi bi-people-fill me-2"></i>Manage Clients</a>
+  <a href="{{ url_for('admin.payments') }}" class="btn btn-outline-secondary"><i class="bi bi-cash-coin me-2"></i>Record Payment</a>
+  <a href="{{ url_for('admin.reports') }}"  class="btn btn-outline-secondary"><i class="bi bi-download me-2"></i>Export Report</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#6c63ff';
+const green  = '#22c55e';
+const orange = '#f59e0b';
+
+// Monthly Earnings Chart
+const earningsCtx = document.getElementById('earningsChart').getContext('2d');
+new Chart(earningsCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ monthly_labels | tojson }},
+    datasets: [{
+      label: 'Earnings (₹)',
+      data: {{ monthly_values | tojson }},
+      backgroundColor: 'rgba(108,99,255,0.35)',
+      borderColor: '#6c63ff',
+      borderWidth: 2,
+      borderRadius: 6,
+      hoverBackgroundColor: 'rgba(108,99,255,0.6)',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7880a0', font: { size: 11 } } },
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#7880a0', font: { size: 11 },
+           callback: v => '₹' + v.toLocaleString('en-IN') } }
+    }
+  }
+});
+
+// Pie Chart
+const pieCtx = document.getElementById('statusChart').getContext('2d');
+new Chart(pieCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Paid', 'Pending/Partial'],
+    datasets: [{
+      data: [{{ paid_count }}, {{ pending_count }}],
+      backgroundColor: ['rgba(34,197,94,0.8)', 'rgba(239,68,68,0.8)'],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    cutout: '65%',
+    plugins: { legend: { display: false } },
+  }
+});
+</script>
+{% endblock %}

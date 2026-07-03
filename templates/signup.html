@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="login-page">
+  <div class="login-card" style="max-width: 480px;">
+
+    <!-- Logo -->
+    <div class="login-logo" style="background: linear-gradient(135deg, var(--accent), #10b981);">
+      <i class="bi bi-person-plus-fill"></i>
+    </div>
+    <h1 class="login-title">Client Registration</h1>
+    <p class="login-sub">Create your account to track video projects & payments</p>
+
+    <!-- Sign Up Form -->
+    <form method="POST" action="{{ url_for('auth.signup') }}" id="signupForm">
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label"><i class="bi bi-person-fill me-1"></i>Full Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="John Doe" required autocomplete="name" />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label"><i class="bi bi-envelope-fill me-1"></i>Email Address *</label>
+          <input type="email" name="email" class="form-control" placeholder="john@example.com" required autocomplete="email" />
+          <div class="form-text" style="font-size:11px;color:var(--text-muted)">
+            Used for notifications and updates.
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><i class="bi bi-telephone-fill me-1"></i>Mobile Number *</label>
+          <input type="tel" name="mobile" class="form-control" placeholder="9668797558" required autocomplete="tel" />
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label"><i class="bi bi-lock-fill me-1"></i>Password *</label>
+          <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" minlength="6" required />
+        </div>
+
+        <div class="col-12">
+          <label class="form-label"><i class="bi bi-geo-alt-fill me-1"></i>Address</label>
+          <textarea name="address" class="form-control" rows="2" placeholder="Street, City, State..."></textarea>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 mt-4" id="submitBtn">
+        <i class="bi bi-check-circle-fill me-2"></i>Register &amp; Continue
+      </button>
+    </form>
+
+    <div class="text-center mt-3" style="font-size: 13.5px;">
+      <span class="text-muted">Already have an account?</span>
+      <a href="{{ url_for('auth.login') }}" class="text-accent fw-600 text-decoration-none ms-1">Login Instead</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.getElementById("signupForm").addEventListener("submit", function() {
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Account…';
+  });
+</script>
+{% endblock %}

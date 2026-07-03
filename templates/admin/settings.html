@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}System Settings - VEMS{% endblock %}
+{% block page_title %}System settings & Backups{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Business configuration -->
+    <div class="col-12 col-lg-6">
+        <div class="content-card">
+            <h5 class="card-title mb-4" style="font-family: var(--font-heading);"><i class="fa-solid fa-sliders text-primary me-2"></i>Business Information</h5>
+            
+            <form action="{{ url_for('admin.save_settings') }}" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="contact_number" class="form-label small text-muted-custom">Call & WhatsApp Contact Number</label>
+                    <input type="text" class="form-control" id="contact_number" name="contact_number" value="{{ settings.get('contact_number', '') }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="instagram_link" class="form-label small text-muted-custom">Instagram Profile URL</label>
+                    <input type="url" class="form-control" id="instagram_link" name="instagram_link" value="{{ settings.get('instagram_link', '') }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="invoice_footer" class="form-label small text-muted-custom">Invoice Footer Disclaimer / Text</label>
+                    <textarea class="form-control" id="invoice_footer" name="invoice_footer" rows="2" required>{{ settings.get('invoice_footer', '') }}</textarea>
+                </div>
+                
+                <hr class="my-4" style="border-color: var(--border-color);">
+                
+                <h6 class="small text-muted-custom mb-3">Branding Assets</h6>
+                
+                <div class="mb-3">
+                    <label for="logo_file" class="form-label small text-muted-custom">Company Logo</label>
+                    <input type="file" class="form-control" id="logo_file" name="logo_file">
+                    {% if settings.get('logo_path') %}
+                        <div class="mt-2 d-flex align-items-center gap-2">
+                            <span class="badge bg-success">Uploaded</span>
+                            <small class="text-muted-custom">Currently rendering active logo in invoices.</small>
+                        </div>
+                    {% else %}
+                        <small class="text-muted-custom d-block mt-1">Default VEMS text will display if empty.</small>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="qr_file" class="form-label small text-muted-custom">Payment QR Code Image</label>
+                    <input type="file" class="form-control" id="qr_file" name="qr_file">
+                    {% if settings.get('qr_code_path') %}
+                        <div class="mt-2 d-flex align-items-center gap-2">
+                            <span class="badge bg-success">Uploaded</span>
+                            <small class="text-muted-custom">Active QR code shown below:</small>
+                        </div>
+                        <div class="mt-2 p-2 bg-light d-inline-block rounded border border-secondary border-opacity-25">
+                            <img src="{{ url_for('static', filename='uploads/' + settings.get('qr_code_path').split('/')[-1]) }}" alt="QR Code Preview" style="height: 100px; width: 100px; object-fit: contain;">
+                        </div>
+                    {% else %}
+                        <small class="text-muted-custom d-block mt-1">Clients won't see a scan QR in dashboards or PDFs until uploaded.</small>
+                    {% endif %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary-custom w-100">
+                    <i class="fa-solid fa-save me-1"></i> Save Configurations
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Right Column: Database Backups & Recovery -->
+    <div class="col-12 col-lg-6">
+        <div class="content-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title mb-0" style="font-family: var(--font-heading);"><i class="fa-solid fa-shield-halved text-success me-2"></i>Database Backups</h5>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('admin.export_all') }}" class="btn btn-outline-primary btn-sm" title="Download Excel database files directly">
+                        <i class="fa-solid fa-file-export me-1"></i> Export Data
+                    </a>
+                    <form action="{{ url_for('admin.trigger_backup') }}" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-success text-dark btn-sm font-weight-bold">
+                            <i class="fa-solid fa-folder-open me-1"></i> Backup Now
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <p class="small text-muted-custom mb-3">
+                Regular automated backups are taken upon system startup. You can trigger manual checkpoints anytime or restore from any ZIP list below.
+            </p>
+            
+            <h6 class="small text-muted-custom mb-3">Available Backup Checkpoints</h6>
+            <div class="table-responsive" style="max-height: 280px; overflow-y: auto;">
+                <table class="table table-hover align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>Created</th>
+                            <th>Size</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if backups %}
+                            {% for b in backups %}
+                                <tr>
+                                    <td class="text-truncate" style="max-width: 140px;" title="{{ b['filename'] }}"><code>{{ b['filename'] }}</code></td>
+                                    <td>{{ b['created_at'] }}</td>
+                                    <td><span class="text-muted-custom">{{ b['size'] }}</span></td>
+                                    <td class="text-end">
+                                        <div class="btn-group">
+                                            <!-- Restore -->
+                                            <form action="{{ url_for('admin.restore_backup') }}" method="POST" class="d-inline" onsubmit="return confirm('WARNING: Restoring this backup will replace all current data. Proceed?');">
+                                                <input type="hidden" name="filename" value="{{ b['filename'] }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Restore Data">
+                                                    <i class="fa-solid fa-rotate-left"></i> Restore
+                                                </button>
+                                            </form>
+                                            <!-- Download ZIP -->
+                                            <a href="{{ url_for('admin.download_backup', filename=b['filename']) }}" class="btn btn-sm btn-outline-secondary" title="Download ZIP File">
+                                                <i class="fa-solid fa-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted-custom py-4">No backup files found.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <hr class="my-4" style="border-color: var(--border-color);">
+            
+            <h6 class="small text-muted-custom mb-3">Restore from External Backup ZIP</h6>
+            <form action="{{ url_for('admin.upload_restore') }}" method="POST" enctype="multipart/form-data">
+                <div class="input-group">
+                    <input type="file" class="form-control form-control-sm" name="backup_file" required>
+                    <button class="btn btn-warning text-dark btn-sm font-weight-bold" type="submit">
+                        <i class="fa-solid fa-upload me-1"></i> Upload & Restore
+                    </button>
+                </div>
+                <small class="text-muted-custom mt-2 d-block">Only upload ZIP backups generated by this system.</small>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

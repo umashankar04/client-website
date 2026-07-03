@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Work History - VEMS{% endblock %}
+{% block page_title %}My Project Logs{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <!-- Status Filter -->
+        <form method="GET" action="{{ url_for('client.work_history') }}" class="d-flex gap-2 align-items-center">
+            <label class="form-label small text-muted-custom mb-0 text-nowrap">Filter Status</label>
+            <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+                <option value="">-- All Statuses --</option>
+                <option value="Pending" {% if selected_status == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Paid" {% if selected_status == 'Paid' %}selected{% endif %}>Paid</option>
+                <option value="Partial Payment" {% if selected_status == 'Partial Payment' %}selected{% endif %}>Partial Payment</option>
+            </select>
+            {% if selected_status %}
+                <a href="{{ url_for('client.work_history') }}" class="btn btn-sm btn-outline-danger" title="Clear Filters"><i class="fa-solid fa-times"></i></a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Work Log Table -->
+    <div class="table-responsive">
+        <table class="table table-hover align-middle small mb-0">
+            <thead>
+                <tr>
+                    <th>Serial #</th>
+                    <th>Date Registered</th>
+                    <th>Service Category</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Gross Total</th>
+                    <th>Status</th>
+                    <th class="text-end">Invoice</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if works %}
+                    {% for w in works %}
+                        <tr>
+                            <td><code>{{ w['Serial Number'] }}</code></td>
+                            <td>{{ w['Date'] }}</td>
+                            <td class="font-weight-bold">{{ w['Service Type'] }}</td>
+                            <td>{{ w['Quantity'] }}</td>
+                            <td>₹{{ "%.2f"|format(w['Price']|float) }}</td>
+                            <td class="font-weight-bold text-primary">₹{{ "%.2f"|format(w['Total']|float) }}</td>
+                            <td>
+                                {% if w['Status'] == 'Paid' %}
+                                    <span class="badge-status paid">Paid</span>
+                                {% elif w['Status'] == 'Partial Payment' or w['Status'] == 'Partial' %}
+                                    <span class="badge-status partial">Partial</span>
+                                {% else %}
+                                    <span class="badge-status pending">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ url_for('client.download_invoice', work_serial=w['Serial Number']) }}" class="btn btn-sm btn-outline-primary" title="Download Invoice PDF">
+                                    <i class="fa-solid fa-file-pdf"></i> Download PDF
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted-custom py-4">No project logs match the current filters.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

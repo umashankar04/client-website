@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - VEMS{% endblock %}
+{% block page_title %}System Overview{% endblock %}
+
+{% block content %}
+<!-- Stat Cards Grid -->
+<div class="row g-3 mb-4">
+    <!-- Total Clients -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Clients</div>
+                <div class="stat-value">{{ total_clients }}</div>
+            </div>
+            <div class="stat-icon primary">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Total Projects -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Total Projects</div>
+                <div class="stat-value">{{ total_projects }}</div>
+            </div>
+            <div class="stat-icon primary">
+                <i class="fa-solid fa-clapperboard"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pending Payments -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Pending Payments</div>
+                <div class="stat-value">₹{{ "%.2f"|format(pending_payments) }}</div>
+            </div>
+            <div class="stat-icon danger">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Paid Payments -->
+    <div class="col-12 col-sm-6 col-xl-3">
+        <div class="stat-card">
+            <div>
+                <div class="stat-label">Paid Payments</div>
+                <div class="stat-value">₹{{ "%.2f"|format(paid_payments) }}</div>
+            </div>
+            <div class="stat-icon success">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Today's Income -->
+    <div class="col-12 col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0) 100%);">
+            <div>
+                <div class="stat-label">Today's Income</div>
+                <div class="stat-value text-primary">₹{{ "%.2f"|format(today_income) }}</div>
+            </div>
+            <div class="stat-icon primary">
+                <i class="fa-solid fa-calendar-day"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Monthly Income -->
+    <div class="col-12 col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0) 100%);">
+            <div>
+                <div class="stat-label">This Month's Income</div>
+                <div class="stat-value text-success">₹{{ "%.2f"|format(monthly_income) }}</div>
+            </div>
+            <div class="stat-icon success">
+                <i class="fa-solid fa-calendar-days"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Yearly Income -->
+    <div class="col-12 col-md-4">
+        <div class="stat-card" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0) 100%);">
+            <div>
+                <div class="stat-label">Yearly Income</div>
+                <div class="stat-value text-warning">₹{{ "%.2f"|format(yearly_income) }}</div>
+            </div>
+            <div class="stat-icon warning">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Section -->
+<div class="row">
+    <!-- Left Column: Notifications & Recent Activities -->
+    <div class="col-12 col-lg-7">
+        <!-- System Notifications Box -->
+        <div class="content-card">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-bell text-warning me-2"></i>Action Required</h5>
+            <div class="notifications-list" style="max-height: 250px; overflow-y: auto;">
+                {% if notifications %}
+                    {% for note in notifications %}
+                        <div class="notification-item {% if 'Pending' in note or 'Overdue' in note %}danger{% elif 'Partial' in note %}warning{% endif %}">
+                            {{ note }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted-custom small mb-0"><i class="fa-solid fa-circle-check text-success me-2"></i>No pending alerts. All systems clear!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Activities Box -->
+        <div class="content-card">
+            <h5 class="card-title mb-3" style="font-family: var(--font-heading);"><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Recent System Activity</h5>
+            <div class="table-responsive">
+                <table class="table table-hover table-borderless align-middle small mb-0">
+                    <thead>
+                        <tr>
+                            <th>Time / Date</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_activities %}
+                            {% for act in recent_activities %}
+                                <tr>
+                                    <td class="text-muted-custom">{{ act.time }}</td>
+                                    <td>{{ act.description }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-secondary">{{ act.type }}</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted-custom py-3">No recent logs recorded.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Quick Charts Overview -->
+    <div class="col-12 col-lg-5">
+        <div class="content-card h-100">
+            <h5 class="card-title mb-4" style="font-family: var(--font-heading);"><i class="fa-solid fa-chart-pie text-success me-2"></i>Financial Allocation</h5>
+            <div style="height: 260px; position: relative;">
+                <canvas id="paymentPieChart"></canvas>
+            </div>
+            <div class="text-center mt-3 text-muted-custom small">
+                Status ratio of overall project invoice billing.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Render Payment Ratio Pie Chart
+        const ctx = document.getElementById('paymentPieChart').getContext('2d');
+        
+        // Fetch chart data from API to render dynamically
+        fetch('/api/charts/payment-ratio')
+            .then(res => res.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Paid', 'Pending', 'Partial Payment'],
+                        datasets: [{
+                            data: [data.paid, data.pending, data.partial],
+                            backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                            borderWidth: 2,
+                            borderColor: document.body.classList.contains('dark-mode') ? '#161e2e' : '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: document.body.classList.contains('dark-mode') ? '#9ca3af' : '#64748b',
+                                    font: { family: 'Inter', size: 12 }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            })
+            .catch(err => {
+                console.error("Error loading payment ratio chart data:", err);
+            });
+    });
+</script>
+{% endblock %}
