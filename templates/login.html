@@ -1,10 +1,7 @@
-{% extends "base.html" %}
-{% block title %}Login{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Login{% endblock %} {% block content
+%}
 <div class="login-page">
   <div class="login-card">
-
     <!-- Logo -->
     <div class="login-logo">
       <i class="bi bi-camera-video-fill"></i>
@@ -14,7 +11,7 @@
 
     <!-- Role Tabs -->
     <div class="role-tabs mb-4" id="roleTabs">
-      <div class="role-tab active" id="tab-admin"  onclick="setRole('admin')">
+      <div class="role-tab active" id="tab-admin" onclick="setRole('admin')">
         <i class="bi bi-shield-lock-fill me-1"></i> Admin
       </div>
       <div class="role-tab" id="tab-client" onclick="setRole('client')">
@@ -32,36 +29,56 @@
           <label class="form-label">
             <i class="bi bi-person-badge-fill me-1"></i>Admin Username
           </label>
-            <input type="text" name="username" id="adminUsernameInput"
-                 class="form-control form-control-lg"
-                 placeholder="Enter admin username"
-                 required autocomplete="username" autofocus />
+          <input
+            type="text"
+            name="username"
+            id="adminUsernameInput"
+            class="form-control form-control-lg"
+            placeholder="Enter admin username"
+            required
+            autocomplete="username"
+            autofocus
+          />
         </div>
         <div class="mb-3">
           <label class="form-label">
             <i class="bi bi-lock-fill me-1"></i>Password
           </label>
           <div class="input-group">
-              <input type="password" name="password" id="adminPasswordInput"
-                   class="form-control form-control-lg"
-                   placeholder="Enter password" required />
-            <button class="btn btn-outline-secondary" type="button"
-                      onclick="togglePwd('adminPasswordInput', 'adminPwdEyeIcon')" tabindex="-1">
-                <i class="bi bi-eye-fill" id="adminPwdEyeIcon"></i>
+            <input
+              type="password"
+              name="password"
+              id="adminPasswordInput"
+              class="form-control form-control-lg"
+              placeholder="Enter password"
+              required
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              onclick="togglePwd('adminPasswordInput', 'adminPwdEyeIcon')"
+              tabindex="-1"
+            >
+              <i class="bi bi-eye-fill" id="adminPwdEyeIcon"></i>
             </button>
           </div>
         </div>
       </div>
 
-        <!-- Client Fields (Name & Password) -->
-      <div id="clientFields" style="display: none;">
+      <!-- Client Fields (Name & Password) -->
+      <div id="clientFields" style="display: none">
         <div class="mb-3">
           <label class="form-label">
             <i class="bi bi-person-fill me-1"></i>Name
           </label>
-          <input type="text" name="name" id="clientNameInput"
-                 class="form-control form-control-lg"
-                 placeholder="Enter your full name" autocomplete="name" />
+          <input
+            type="text"
+            name="name"
+            id="clientNameInput"
+            class="form-control form-control-lg"
+            placeholder="Enter your full name"
+            autocomplete="name"
+          />
         </div>
 
         <div class="mb-3">
@@ -69,45 +86,77 @@
             <i class="bi bi-lock-fill me-1"></i>Password
           </label>
           <div class="input-group">
-            <input type="password" name="password" id="clientPasswordInput"
-                   class="form-control form-control-lg"
-                   placeholder="Enter your password" />
-            <button class="btn btn-outline-secondary" type="button"
-                    onclick="togglePwd('clientPasswordInput', 'clientPwdEyeIcon')" tabindex="-1">
+            <input
+              type="password"
+              name="password"
+              id="clientPasswordInput"
+              class="form-control form-control-lg"
+              placeholder="Enter your password"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              type="button"
+              onclick="togglePwd('clientPasswordInput', 'clientPwdEyeIcon')"
+              tabindex="-1"
+            >
               <i class="bi bi-eye-fill" id="clientPwdEyeIcon"></i>
             </button>
           </div>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100 py-2 mt-1" id="submitBtn">
+      <button
+        type="submit"
+        class="btn btn-primary w-100 py-2 mt-1"
+        id="submitBtn"
+      >
         <i class="bi bi-box-arrow-in-right me-2" id="submitIcon"></i>
         <span id="submitBtnText">Login</span>
       </button>
     </form>
 
     <!-- Info Footer -->
-    <div class="mt-4 pt-3" style="border-top:1px solid var(--border)">
-      <div class="d-flex align-items-start gap-2 mb-2" style="font-size:12px;color:var(--text-muted)">
-        <i class="bi bi-shield-check-fill text-success mt-1" style="font-size:14px;flex-shrink:0"></i>
-        <span>Secure system access. Clients log in with name and password, Admin logs in with credentials.</span>
+    <div class="mt-4 pt-3" style="border-top: 1px solid var(--border)">
+      <div
+        class="d-flex align-items-start gap-2 mb-2"
+        style="font-size: 12px; color: var(--text-muted)"
+      >
+        <i
+          class="bi bi-shield-check-fill text-success mt-1"
+          style="font-size: 14px; flex-shrink: 0"
+        ></i>
+        <span
+          >Secure system access. Clients log in with name and password, Admin
+          logs in with credentials.</span
+        >
       </div>
     </div>
 
     <!-- Sign Up Link for Clients -->
-    <div id="signUpLink" class="text-center mt-3" style="display: none; font-size: 13.5px;">
+    <div
+      id="signUpLink"
+      class="text-center mt-3"
+      style="display: none; font-size: 13.5px"
+    >
       <span class="text-muted">Don't have an account?</span>
-      <a href="{{ url_for('auth.signup') }}" class="text-accent fw-600 text-decoration-none ms-1">Sign Up Here</a>
+      <a
+        href="{{ url_for('auth.signup') }}"
+        class="text-accent fw-600 text-decoration-none ms-1"
+        >Sign Up Here</a
+      >
     </div>
-
   </div>
 </div>
 
 <script>
   function setRole(role) {
     document.getElementById("roleInput").value = role;
-    document.getElementById("tab-admin").classList.toggle("active",  role === "admin");
-    document.getElementById("tab-client").classList.toggle("active", role === "client");
+    document
+      .getElementById("tab-admin")
+      .classList.toggle("active", role === "admin");
+    document
+      .getElementById("tab-client")
+      .classList.toggle("active", role === "client");
 
     if (role === "admin") {
       document.getElementById("adminFields").style.display = "block";
@@ -119,7 +168,8 @@
       document.getElementById("clientPasswordInput").required = false;
 
       document.getElementById("submitBtnText").textContent = "Login";
-      document.getElementById("submitIcon").className = "bi bi-box-arrow-in-right me-2";
+      document.getElementById("submitIcon").className =
+        "bi bi-box-arrow-in-right me-2";
       document.getElementById("signUpLink").style.display = "none";
     } else {
       document.getElementById("adminFields").style.display = "none";
@@ -131,7 +181,8 @@
       document.getElementById("clientPasswordInput").required = true;
 
       document.getElementById("submitBtnText").textContent = "Login";
-      document.getElementById("submitIcon").className = "bi bi-box-arrow-in-right me-2";
+      document.getElementById("submitIcon").className =
+        "bi bi-box-arrow-in-right me-2";
       document.getElementById("signUpLink").style.display = "block";
     }
   }
@@ -149,12 +200,13 @@
   }
 
   // Show loading state on submit
-  document.getElementById("loginForm").addEventListener("submit", function() {
-    const btn  = document.getElementById("submitBtn");
+  document.getElementById("loginForm").addEventListener("submit", function () {
+    const btn = document.getElementById("submitBtn");
     const text = document.getElementById("submitBtnText");
     btn.disabled = true;
     text.textContent = "Logging in...";
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+    btn.innerHTML =
+      '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
   });
 </script>
 {% endblock %}
