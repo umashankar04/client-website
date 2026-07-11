@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: client-website
+    env: python
+    runtime: python-3.11
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app
+    autoDeploy: true
