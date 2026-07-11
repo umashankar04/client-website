@@ -87,6 +87,8 @@ def create_app():
     app.register_blueprint(api_bp)
     
     # 6. Default root routing
+    from flask import send_from_directory, abort
+
     @app.route('/')
     def index():
         """Root redirect based on user role authentication."""
@@ -95,7 +97,17 @@ def create_app():
                 return redirect(url_for('admin.dashboard'))
             else:
                 return redirect(url_for('client.dashboard'))
-        return redirect(url_for('auth.login'))
+        # Serve the static landing page for unauthenticated visitors
+        return send_from_directory(os.path.join(app.root_path, "docs"), "index.html")
+
+    @app.route("/<path:filename>")
+    def serve_docs_assets(filename):
+        """Serve static assets from the docs folder (for local development parity)."""
+        docs_dir = os.path.join(app.root_path, "docs")
+        file_path = os.path.join(docs_dir, filename)
+        if os.path.isfile(file_path):
+            return send_from_directory(docs_dir, filename)
+        abort(404)
         
     # 7. Error handlers
     @app.errorhandler(403)

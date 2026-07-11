@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umashankar | Professional Video Editor & Content Creator</title>
+    <meta name="description" content="Cinematic video editing that drives engagement and results. Specializing in Reels, Podcasts, YouTube Shorts, and YouTube Long-form videos.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/portfolio.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-icon"><i class="fa-solid fa-play"></i></span>
+                <span class="logo-text">UMASHANKAR</span>
+            </a>
+            <nav class="nav-menu" id="navMenu">
+                <a href="#hero" class="nav-link active">Home</a>
+                <a href="#showreel" class="nav-link">Showreel</a>
+                <a href="#services" class="nav-link">Services</a>
+                <a href="#portfolio" class="nav-link">Portfolio</a>
+                <a href="#process" class="nav-link">How It Works</a>
+                <a href="#contact" class="nav-link">Contact</a>
+                <div class="nav-cta-group">
+                    <a href="/login" class="btn btn-outline nav-btn">Client Login</a>
+                    <a href="/signup" class="btn btn-primary nav-btn">Sign Up</a>
+                </div>
+            </nav>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation Menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+        <div class="hero-bg-glow"></div>
+        <div class="container hero-container">
+            <div class="hero-content">
+                <span class="hero-tagline"><i class="fa-solid fa-wand-magic-sparkles"></i> Cinematic Video Editing</span>
+                <h1 class="hero-title">Transforming Raw Footage Into <span class="gradient-text">Cinematic Masterpieces</span></h1>
+                <p class="hero-description">I help creators, podcasters, and high-growth brands scale their audience and engagement through high-impact editing, pacing, and visual storytelling.</p>
+                <div class="hero-actions">
+                    <a href="#showreel" class="btn btn-primary btn-lg"><i class="fa-solid fa-play-circle"></i> Watch Showreel</a>
+                    <a href="#services" class="btn btn-outline btn-lg">View Services</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-num" data-val="150">150+</span>
+                        <span class="stat-label">Videos Edited</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num" data-val="10">10M+</span>
+                        <span class="stat-label">Views Generated</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num" data-val="50">50+</span>
+                        <span class="stat-label">Happy Clients</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="visual-wrapper">
+                    <div class="grid-pattern"></div>
+                    <div class="visual-card main-card">
+                        <i class="fa-solid fa-film card-icon icon-cyan"></i>
+                        <div class="card-info">
+                            <h4>Showreel.mp4</h4>
+                            <p>Edited using Premier & After Effects</p>
+                        </div>
+                        <span class="card-badge badge-cyan">4K UHD</span>
+                    </div>
+                    <div class="visual-card secondary-card animate-float-slow">
+                        <i class="fa-solid fa-bolt card-icon icon-purple"></i>
+                        <div class="card-info">
+                            <h4>Social Reels</h4>
+                            <p>Retention rate +85%</p>
+                        </div>
+                        <span class="card-badge badge-purple">Trending</span>
+                    </div>
+                    <div class="visual-image-placeholder">
+                        <div class="overlay-gradient"></div>
+                        <div class="play-indicator animate-pulse-slow">
+                            <a href="#showreel" aria-label="Watch showreel"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Showreel Section -->
+    <section class="showreel-section" id="showreel">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-tag">Featured Work</span>
+                <h2 class="section-title">Take A Look At My Showreel</h2>
+                <div class="section-divider"></div>
+                <p class="section-subtitle">See how dynamic cuts, color grading, sound design, and custom graphics come together to create high-retention content.</p>
+            </div>
+            
+            <div class="video-container-wrapper">
+                <div class="video-glow"></div>
+                <div class="video-container">
+                    <!-- Standard video embed, using a premium placeholder cover -->
+                    <div class="video-placeholder" id="videoPlaceholder">
+                        <div class="placeholder-overlay"></div>
+                        <div class="play-btn-circle" id="playVideoBtn">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                        <span class="video-duration">2:15</span>
+                        <div class="placeholder-details">
+                            <h3>Umashankar's 2026 Editing Showreel</h3>
+                            <p>A compilation of our best long-form, Reels, and cinematic sound design work.</p>
+                        </div>
+                    </div>
+                    <!-- The actual video element or iframe (loaded on play click) -->
+                    <div class="video-iframe-holder" id="videoHolder" style="display: none;">
+                        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1" title="Editing Showreel" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services-section" id="services">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-tag">My Expertise</span>
+                <h2 class="section-title">High-Impact Video Editing Services</h2>
+                <div class="section-divider"></div>
+                <p class="section-subtitle">Tailored editing structures designed to fit specific content formats and platforms.</p>
+            </div>
+
+            <div class="services-grid">
+                <!-- Service 1: Reels & Shorts -->
+                <div class="service-card">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                    </div>
+                    <h3 class="service-title">Short Form (Reels/Shorts/TikTok)</h3>
+                    <p class="service-desc">Fast-paced vertical edits with dynamic captions, sound effects, B-roll overlays, and jump-cuts optimized to maximize watch-time and trigger algorithms.</p>
+                    <div class="service-price">Starting from <span>$60.00</span></div>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check text-cyan"></i> Premium dynamic captions</li>
+                        <li><i class="fa-solid fa-check text-cyan"></i> SFX & background music</li>
+                        <li><i class="fa-solid fa-check text-cyan"></i> Visual hooks & B-rolls</li>
+                        <li><i class="fa-solid fa-check text-cyan"></i> Color correction</li>
+                    </ul>
+                    <a href="/signup" class="btn btn-outline service-btn">Order Now</a>
+                </div>
+
+                <!-- Service 2: Podcast Editing -->
+                <div class="service-card featured">
+                    <div class="card-badge-popular">Best Value</div>
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                    <h3 class="service-title">Podcast Editing & Production</h3>
+                    <p class="service-desc">Multi-cam syncing, advanced audio cleanup (denoise, compression), filler word removal, graphic intros, lower thirds, and creation of social promotional clips.</p>
+                    <div class="service-price">Starting from <span>$200.00</span></div>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check text-purple"></i> Multi-cam dynamic switching</li>
+                        <li><i class="fa-solid fa-check text-purple"></i> Audio mastering & leveling</li>
+                        <li><i class="fa-solid fa-check text-purple"></i> Branding overlays & lower thirds</li>
+                        <li><i class="fa-solid fa-check text-purple"></i> 2 Social Clips/Shorts included</li>
+                    </ul>
+                    <a href="/signup" class="btn btn-primary service-btn">Order Now</a>
+                </div>
+
+                <!-- Service 3: YouTube Long-Form -->
+                <div class="service-card">
+                    <div class="service-icon-box">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <h3 class="service-title">YouTube Long-Form Videos</h3>
+                    <p class="service-desc">Engaging storytelling edits. Excellent retention-focused pacing, screen transitions, stock footages, sound design, soundscapes, and zoom-ins to keep viewers engaged.</p>
+                    <div class="service-price">Starting from <span>$30.00 <small>/ 10m</small></span></div>
+                    <ul class="service-features">
+                        <li><i class="fa-solid fa-check text-cyan"></i> Retention-oriented editing</li>
+                        <li><i class="fa-solid fa-check text-cyan"></i> Color grading & soundscapes</li>
+                        <li><i class="fa-solid fa-check text-cyan"></i> Royalty-free music integration</li>
+                        <li><i class="fa-solid fa-check text-cyan"></i> Zoom effects & graphics</li>
+                    </ul>
+                    <a href="/signup" class="btn btn-outline service-btn">Order Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Filter Grid -->
+    <section class="portfolio-section" id="portfolio">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-tag">Portfolio</span>
+                <h2 class="section-title">My Recent Projects</h2>
+                <div class="section-divider"></div>
+                <p class="section-subtitle">A collection of various video projects edited for creators and businesses worldwide.</p>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="portfolio-filters">
+                <button class="filter-btn active" data-filter="all">All Projects</button>
+                <button class="filter-btn" data-filter="reels">Shorts & Reels</button>
+                <button class="filter-btn" data-filter="podcast">Podcasts</button>
+                <button class="filter-btn" data-filter="youtube">YouTube Long-Form</button>
+            </div>
+
+            <!-- Grid -->
+            <div class="portfolio-grid" id="portfolioGrid">
+                <!-- Project 1 -->
+                <div class="portfolio-item" data-category="reels">
+                    <div class="portfolio-thumb">
+                        <div class="portfolio-overlay">
+                            <a href="#showreel" class="portfolio-play"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                        <div class="portfolio-img-stub bg-gradient-1">
+                            <span class="thumb-icon"><i class="fa-solid fa-bolt"></i></span>
+                            <span class="thumb-tag">Short Form</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-info">
+                        <h4>Finance Creator Reel</h4>
+                        <p>Fast dynamic captions, charts, and screen-shakes. Generated 1.2M views.</p>
+                    </div>
+                </div>
+
+                <!-- Project 2 -->
+                <div class="portfolio-item" data-category="youtube">
+                    <div class="portfolio-thumb">
+                        <div class="portfolio-overlay">
+                            <a href="#showreel" class="portfolio-play"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                        <div class="portfolio-img-stub bg-gradient-2">
+                            <span class="thumb-icon"><i class="fa-solid fa-clapperboard"></i></span>
+                            <span class="thumb-tag">YouTube</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-info">
+                        <h4>Travel Documentary Vlog</h4>
+                        <p>Cinematic color grading, slow-mo transitions, and soundscapes.</p>
+                    </div>
+                </div>
+
+                <!-- Project 3 -->
+                <div class="portfolio-item" data-category="podcast">
+                    <div class="portfolio-thumb">
+                        <div class="portfolio-overlay">
+                            <a href="#showreel" class="portfolio-play"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                        <div class="portfolio-img-stub bg-gradient-3">
+                            <span class="thumb-icon"><i class="fa-solid fa-podcast"></i></span>
+                            <span class="thumb-tag">Podcast</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-info">
+                        <h4>Tech Talk Podcast - Ep 42</h4>
+                        <p>3-camera setup with dynamic switching, lower thirds, and audio cleanup.</p>
+                    </div>
+                </div>
+
+                <!-- Project 4 -->
+                <div class="portfolio-item" data-category="reels">
+                    <div class="portfolio-thumb">
+                        <div class="portfolio-overlay">
+                            <a href="#showreel" class="portfolio-play"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                        <div class="portfolio-img-stub bg-gradient-4">
+                            <span class="thumb-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span class="thumb-tag">Reels</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-info">
+                        <h4>Fitness Hook Reel</h4>
+                        <p>High energy cuts, beat-sync music, and zoom effects. Retention +90%.</p>
+                    </div>
+                </div>
+
+                <!-- Project 5 -->
+                <div class="portfolio-item" data-category="youtube">
+                    <div class="portfolio-thumb">
+                        <div class="portfolio-overlay">
+                            <a href="#showreel" class="portfolio-play"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                        <div class="portfolio-img-stub bg-gradient-5">
+                            <span class="thumb-icon"><i class="fa-solid fa-gamepad"></i></span>
+                            <span class="thumb-tag">Gaming</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-info">
+                        <h4>Gaming Video Essay</h4>
+                        <p>Motion graphics, text overlays, sound effects, and fast zooms.</p>
+                    </div>
+                </div>
+
+                <!-- Project 6 -->
+                <div class="portfolio-item" data-category="podcast">
+                    <div class="portfolio-thumb">
+                        <div class="portfolio-overlay">
+                            <a href="#showreel" class="portfolio-play"><i class="fa-solid fa-play"></i></a>
+                        </div>
+                        <div class="portfolio-img-stub bg-gradient-6">
+                            <span class="thumb-icon"><i class="fa-solid fa-users"></i></span>
+                            <span class="thumb-tag">Interview</span>
+                        </div>
+                    </div>
+                    <div class="portfolio-info">
+                        <h4>Business Masterclass Podcast</h4>
+                        <p>Screen-in-screen graphics, animated logos, and noise reduction.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The VEMS client experience section -->
+    <section class="process-section" id="process">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-tag">Workflow</span>
+                <h2 class="section-title">How We Work Together (VEMS)</h2>
+                <div class="section-divider"></div>
+                <p class="section-subtitle">Enjoy a structured, transparent editing process with our dedicated Client Management Portal.</p>
+            </div>
+
+            <div class="process-timeline">
+                <div class="timeline-glow-line"></div>
+                
+                <!-- Step 1 -->
+                <div class="timeline-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Create Your Client Account</h3>
+                        <p>Sign up on our client portal in 30 seconds. You will instantly receive a unique Client ID and username to access your secure personal dashboard.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="timeline-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Submit Video Requests</h3>
+                        <p>Upload raw footage to your preferred cloud storage (Google Drive, Dropbox, etc.) and submit the link directly on your dashboard along with editing instructions, service choice, and quantity.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="timeline-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Real-time Project Tracking</h3>
+                        <p>No more endless emails. Track your project's progress in real-time as it moves from <strong>Pending</strong>, to <strong>In Progress</strong>, and to <strong>Completed</strong> directly inside the portal.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="timeline-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Invoicing & Simple Payments</h3>
+                        <p>Get automated PDF invoices directly on your dashboard. Monitor your total expenses, amounts paid, and remaining balance with visual payment logs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="process-cta text-center">
+                <div class="cta-card">
+                    <h3>Ready to upgrade your content?</h3>
+                    <p>Join the portal to start sending video tasks and tracking your project progress.</p>
+                    <div class="cta-buttons">
+                        <a href="/signup" class="btn btn-primary btn-lg">Create Client Account</a>
+                        <a href="/login" class="btn btn-outline btn-lg">Access Portal</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials-section">
+        <div class="container">
+            <div class="section-header text-center">
+                <span class="section-tag">Reviews</span>
+                <h2 class="section-title">What My Clients Say</h2>
+                <div class="section-divider"></div>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="quote">"Umashankar completely revitalized our YouTube Shorts pacing. Our average view duration skyrocketed by 45% in the first two weeks!"</p>
+                    <div class="user-info">
+                        <div class="avatar bg-gradient-1">JD</div>
+                        <div>
+                            <h4>Julian David</h4>
+                            <p>Finance & Tech Content Creator</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="quote">"The VEMS portal makes working together incredibly simple. I upload my raw audio, track the edit state, and download the finished MP4 + PDF invoice all in one dashboard!"</p>
+                    <div class="user-info">
+                        <div class="avatar bg-gradient-3">SM</div>
+                        <div>
+                            <h4>Sarah Mitchell</h4>
+                            <p>Host, Startup Secrets Podcast</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    <p class="quote">"Professional, prompt, and has an incredible ear for background score and sound design. Cannot recommend his full package service enough."</p>
+                    <div class="user-info">
+                        <div class="avatar bg-gradient-5">RK</div>
+                        <div>
+                            <h4>Ryan K.</h4>
+                            <p>Founder, PrimeFitness Agency</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact & Hire Me Section -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-info-panel">
+                    <span class="section-tag">Let's Connect</span>
+                    <h2>Start Your Video Editing Project</h2>
+                    <p>Have an upcoming project or want a custom monthly retainer model? Drop a message, or sign up on the client portal to add work directly!</p>
+                    
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa-solid fa-phone"></i></div>
+                            <div class="info-details">
+                                <span class="info-label">Call / WhatsApp</span>
+                                <a href="tel:9668797558" class="info-val">+91 9668797558</a>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa-brands fa-instagram"></i></div>
+                            <div class="info-details">
+                                <span class="info-label">Instagram</span>
+                                <a href="https://www.instagram.com/pradhan04_" target="_blank" rel="noopener noreferrer" class="info-val">@pradhan04_</a>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+                            <div class="info-details">
+                                <span class="info-label">Direct Email</span>
+                                <a href="mailto:info@vems.com" class="info-val">info@vems.com</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portal-callout">
+                        <div class="callout-icon"><i class="fa-solid fa-circle-info"></i></div>
+                        <div>
+                            <h4>Existing Client?</h4>
+                            <p>Log in directly to order editing, view invoices, or track active works.</p>
+                            <a href="/login" class="callout-link">Go to Client Portal <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form-panel">
+                    <div class="form-glow"></div>
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <label for="formName">Name <span class="text-rose">*</span></label>
+                            <input type="text" id="formName" placeholder="Enter your full name" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="formEmail">Email <span class="text-rose">*</span></label>
+                                <input type="email" id="formEmail" placeholder="you@example.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="formService">Select Service</label>
+                                <select id="formService">
+                                    <option value="reels">Reels / Shorts Edit</option>
+                                    <option value="podcast">Podcast Production</option>
+                                    <option value="youtube">YouTube Long-Form</option>
+                                    <option value="other">Other Package / Retainer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="formMessage">Project Details <span class="text-rose">*</span></label>
+                            <textarea id="formMessage" rows="5" placeholder="Tell me about your video footage, duration, style, and references..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">Send Inquiry <i class="fa-solid fa-paper-plane"></i></button>
+                        <div class="form-status" id="formStatus"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="#" class="nav-logo">
+                        <span class="logo-icon"><i class="fa-solid fa-play"></i></span>
+                        <span class="logo-text">UMASHANKAR</span>
+                    </a>
+                    <p>Cinematic Video Editing & Content Creation Management.</p>
+                </div>
+                <div class="footer-links-group">
+                    <div class="footer-links">
+                        <h4>Navigation</h4>
+                        <a href="#hero">Home</a>
+                        <a href="#showreel">Showreel</a>
+                        <a href="#services">Services</a>
+                        <a href="#portfolio">Portfolio</a>
+                    </div>
+                    <div class="footer-links">
+                        <h4>VEMS Portal</h4>
+                        <a href="/login">Client Login</a>
+                        <a href="/signup">Client Register</a>
+                        <a href="/login">Admin Portal</a>
+                    </div>
+                    <div class="footer-links">
+                        <h4>Contact</h4>
+                        <a href="tel:9668797558"><i class="fa-solid fa-phone"></i> +91 9668797558</a>
+                        <a href="https://www.instagram.com/pradhan04_" target="_blank"><i class="fa-brands fa-instagram"></i> Instagram</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Umashankar Pradhan. All rights reserved. Video Editing Management System (VEMS).</p>
+                <div class="footer-socials">
+                    <a href="tel:9668797558" aria-label="Phone"><i class="fa-solid fa-phone"></i></a>
+                    <a href="https://www.instagram.com/pradhan04_" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="mailto:info@vems.com" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="js/portfolio.js"></script>
+</body>
+</html>

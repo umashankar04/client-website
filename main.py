@@ -180,13 +180,25 @@ def create_app():
     app.register_blueprint(client_bp)
 
     # ── Root redirect ──────────────────────────────────────────────────────
+    from flask import send_from_directory, abort
+
     @app.route("/")
     def index():
         if current_user.is_authenticated:
             if current_user.role == "admin":
                 return redirect(url_for("admin.dashboard"))
             return redirect(url_for("client.dashboard"))
-        return redirect(url_for("auth.login"))
+        # Serve the static landing page for unauthenticated visitors
+        return send_from_directory(os.path.join(app.root_path, "docs"), "index.html")
+
+    @app.route("/<path:filename>")
+    def serve_docs_assets(filename):
+        """Serve static assets from the docs folder (for local development parity)."""
+        docs_dir = os.path.join(app.root_path, "docs")
+        file_path = os.path.join(docs_dir, filename)
+        if os.path.isfile(file_path):
+            return send_from_directory(docs_dir, filename)
+        abort(404)
 
     # ── Serve uploaded files (logo, QR) ───────────────────────────────────
     from flask import send_from_directory
