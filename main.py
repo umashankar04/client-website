@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
     print("\n[*]  Starting Flask server...")
     print("     URL  --> http://127.0.0.1:5000")
-    print("     Login: admin / admin123")
+    print("     Admin Login: umashankar / videoeditor")
     print("     Press Ctrl+C to stop.\n")
 
     app = create_app()
