@@ -1,9 +1,10 @@
 services:
   - type: web
     name: client-website
-    env: python
-    runtime: python-3.11
-    plan: starter
+    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn wsgi:app
     autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.10
