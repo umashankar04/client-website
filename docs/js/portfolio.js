@@ -1,7 +1,7 @@
 // ==========================================================================
 // CONFIGURATION: Set your deployed backend portal URL here (e.g. on Render/Railway)
 // ==========================================================================
-const PORTAL_BACKEND_URL = 'https://client-website-vems.onrender.com'; // CHANGE THIS after deploying your dynamic app!
+const PORTAL_BACKEND_URL = 'https://client-website-0pzy.onrender.com'; // CHANGE THIS after deploying your dynamic app!
 
 // Helper function to resolve login/signup links between Local and Production
 function getPortalLink(path) {
