@@ -12,6 +12,7 @@ from flask_login import login_required, current_user
 import config
 from utils.excel_manager import read_rows
 from utils.helpers import safe_float
+from utils import db as _db
 
 client_bp = Blueprint("client", __name__, url_prefix="/client")
 
@@ -23,6 +24,11 @@ CLIENTS_FILE  = os.path.join(config.DATA_DIR, "clients.xlsx")
 
 
 def get_setting(key, default=""):
+    if _db.is_enabled():
+        try:
+            return _db.get_setting(key, default)
+        except Exception:
+            pass
     rows = read_rows(SETTINGS_FILE)
     for r in rows:
         if r.get("key") == key:
@@ -48,8 +54,12 @@ def dashboard():
     """Client dashboard: shows their work history and payment summary."""
     client_id = current_user.id
 
-    works    = [w for w in read_rows(WORK_FILE)     if w.get("client_id") == client_id]
-    payments = [p for p in read_rows(PAYMENTS_FILE) if p.get("client_id") == client_id]
+    if _db.is_enabled():
+        works    = [w for w in _db.get_all_work()     if w.get("client_id") == client_id]
+        payments = [p for p in _db.get_all_payments() if p.get("client_id") == client_id]
+    else:
+        works    = [w for w in read_rows(WORK_FILE)     if w.get("client_id") == client_id]
+        payments = [p for p in read_rows(PAYMENTS_FILE) if p.get("client_id") == client_id]
 
     total_work    = len(works)
     total_billed  = sum(safe_float(w.get("total",0)) for w in works)
@@ -85,18 +95,34 @@ def download_invoice(serial):
     from utils.helpers import generate_id
 
     client_id = current_user.id
-    works     = read_rows(WORK_FILE)
+    
+    if _db.is_enabled():
+        works     = _db.get_all_work()
+    else:
+        works     = read_rows(WORK_FILE)
+        
     work      = next((w for w in works if w.get("serial") == serial), None)
 
     if not work or work.get("client_id") != client_id:
         abort(403)
 
-    invoices = read_rows(INVOICES_FILE)
-    payments = [p for p in read_rows(PAYMENTS_FILE) if p.get("client_id") == client_id]
-    clients  = read_rows(CLIENTS_FILE)
+    if _db.is_enabled():
+        invoices = _db.get_all_invoices()
+        payments = [p for p in _db.get_all_payments() if p.get("client_id") == client_id]
+        clients  = _db.get_all_clients()
+        
+        # Load DB settings
+        settings_rows = read_rows(SETTINGS_FILE)
+        settings = {r["key"]: _db.get_setting(r["key"], r.get("value","")) for r in settings_rows}
+    else:
+        invoices = read_rows(INVOICES_FILE)
+        payments = [p for p in read_rows(PAYMENTS_FILE) if p.get("client_id") == client_id]
+        clients  = read_rows(CLIENTS_FILE)
+        
+        settings_rows = read_rows(SETTINGS_FILE)
+        settings = {r["key"]: r.get("value","") for r in settings_rows}
+
     client   = next((c for c in clients if c.get("client_id") == client_id), {})
-    settings_rows = read_rows(SETTINGS_FILE)
-    settings = {r["key"]: r.get("value","") for r in settings_rows}
 
     existing   = next((inv for inv in invoices if inv.get("serial") == serial), None)
     invoice_no = existing.get("invoice_no") if existing else generate_id("INV", invoices, "invoice_no")

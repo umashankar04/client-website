@@ -48,6 +48,11 @@ def admin_only(f):
 
 
 def get_setting(key, default=""):
+    if _db.is_enabled():
+        try:
+            return _db.get_setting(key, default)
+        except Exception:
+            pass
     rows = read_rows(SETTINGS_FILE)
     for r in rows:
         if r.get("key") == key:
@@ -56,6 +61,13 @@ def get_setting(key, default=""):
 
 
 def get_all_settings():
+    if _db.is_enabled():
+        rows = read_rows(SETTINGS_FILE)
+        settings_dict = {}
+        for r in rows:
+            k = r["key"]
+            settings_dict[k] = _db.get_setting(k, r.get("value", ""))
+        return settings_dict
     rows = read_rows(SETTINGS_FILE)
     return {r["key"]: r.get("value", "") for r in rows}
 
@@ -67,9 +79,14 @@ def get_all_settings():
 @login_required
 @admin_only
 def dashboard():
-    clients  = read_rows(CLIENTS_FILE)
-    works    = read_rows(WORK_FILE)
-    payments = read_rows(PAYMENTS_FILE)
+    if _db.is_enabled():
+        clients  = _db.get_all_clients()
+        works    = _db.get_all_work()
+        payments = _db.get_all_payments()
+    else:
+        clients  = read_rows(CLIENTS_FILE)
+        works    = read_rows(WORK_FILE)
+        payments = read_rows(PAYMENTS_FILE)
 
     today    = today_str()
     month    = today[:7]   # YYYY-MM
@@ -293,7 +310,10 @@ def reset_client_password():
 @login_required
 @admin_only
 def services():
-    svcs = read_rows(SERVICES_FILE)
+    if _db.is_enabled():
+        svcs = _db.get_all_services()
+    else:
+        svcs = read_rows(SERVICES_FILE)
     return render_template("services.html", services=svcs)
 
 
@@ -301,15 +321,25 @@ def services():
 @login_required
 @admin_only
 def add_service():
-    rows = read_rows(SERVICES_FILE)
+    if _db.is_enabled():
+        rows = _db.get_all_services()
+    else:
+        rows = read_rows(SERVICES_FILE)
+        
     svc_id = generate_id("S", rows, "service_id")
     new = {
         "service_id": svc_id,
         "name":       request.form.get("name","").strip(),
         "price":      safe_float(request.form.get("price", 0)),
     }
-    rows.append(new)
-    write_rows(SERVICES_FILE, rows, SERVICE_HEADERS)
+    
+    if _db.is_enabled():
+        _db.create_service(new)
+        
+    excel_rows = read_rows(SERVICES_FILE)
+    excel_rows.append(new)
+    write_rows(SERVICES_FILE, excel_rows, SERVICE_HEADERS)
+    
     flash("Service added.", "success")
     return redirect(url_for("admin.services"))
 
@@ -319,11 +349,17 @@ def add_service():
 @admin_only
 def edit_service():
     svc_id = request.form.get("service_id")
+    name = request.form.get("name","").strip()
+    price = safe_float(request.form.get("price", 0))
+
+    if _db.is_enabled():
+        _db.update_service(svc_id, {"name": name, "price": price})
+
     rows = read_rows(SERVICES_FILE)
     for s in rows:
         if s.get("service_id") == svc_id:
-            s["name"]  = request.form.get("name", s["name"])
-            s["price"] = safe_float(request.form.get("price", s["price"]))
+            s["name"]  = name or s["name"]
+            s["price"] = price
             break
     write_rows(SERVICES_FILE, rows, SERVICE_HEADERS)
     flash("Service updated.", "success")
@@ -334,6 +370,9 @@ def edit_service():
 @login_required
 @admin_only
 def delete_service(svc_id):
+    if _db.is_enabled():
+        _db.delete_service(svc_id)
+
     rows = read_rows(SERVICES_FILE)
     rows = [s for s in rows if s.get("service_id") != svc_id]
     write_rows(SERVICES_FILE, rows, SERVICE_HEADERS)
@@ -353,9 +392,14 @@ def work():
     f_status= request.args.get("status","")
     f_date  = request.args.get("date_filter","")
 
-    works   = read_rows(WORK_FILE)
-    clients = read_rows(CLIENTS_FILE)
-    services= read_rows(SERVICES_FILE)
+    if _db.is_enabled():
+        works   = _db.get_all_work()
+        clients = _db.get_all_clients()
+        services= _db.get_all_services()
+    else:
+        works   = read_rows(WORK_FILE)
+        clients = read_rows(CLIENTS_FILE)
+        services= read_rows(SERVICES_FILE)
 
     today   = today_str()
     month   = today[:7]
@@ -390,9 +434,14 @@ def work():
 @login_required
 @admin_only
 def add_work():
-    works   = read_rows(WORK_FILE)
-    clients = read_rows(CLIENTS_FILE)
-    services= read_rows(SERVICES_FILE)
+    if _db.is_enabled():
+        works   = _db.get_all_work()
+        clients = _db.get_all_clients()
+        services= _db.get_all_services()
+    else:
+        works   = read_rows(WORK_FILE)
+        clients = read_rows(CLIENTS_FILE)
+        services= read_rows(SERVICES_FILE)
 
     serial     = generate_id("W", works, "serial")
     client_id  = request.form.get("client_id","")
@@ -418,8 +467,14 @@ def add_work():
         "notes":        request.form.get("notes",""),
         "status":       request.form.get("status","Pending"),
     }
-    works.append(new)
-    write_rows(WORK_FILE, works, WORK_HEADERS)
+    
+    if _db.is_enabled():
+        _db.create_work(new)
+        
+    excel_works = read_rows(WORK_FILE)
+    excel_works.append(new)
+    write_rows(WORK_FILE, excel_works, WORK_HEADERS)
+    
     flash(f"Work entry {serial} added (Total: ₹{total:.2f}).", "success")
     return redirect(url_for("admin.work"))
 
@@ -428,6 +483,9 @@ def add_work():
 @login_required
 @admin_only
 def delete_work(serial):
+    if _db.is_enabled():
+        _db.delete_work(serial)
+
     works = read_rows(WORK_FILE)
     works = [w for w in works if w.get("serial") != serial]
     write_rows(WORK_FILE, works, WORK_HEADERS)
@@ -444,6 +502,9 @@ def toggle_work_status(serial):
     if status not in ["Pending", "Completed", "Cancelled"]:
         flash("Invalid status.", "danger")
         return redirect(url_for("admin.work"))
+
+    if _db.is_enabled():
+        _db.update_work(serial, {"status": status})
 
     works = read_rows(WORK_FILE)
     updated = False
@@ -469,8 +530,13 @@ def toggle_work_status(serial):
 def payments():
     search   = request.args.get("q","").strip().lower()
     f_status = request.args.get("status","")
-    all_pmts = read_rows(PAYMENTS_FILE)
-    clients  = read_rows(CLIENTS_FILE)
+    
+    if _db.is_enabled():
+        all_pmts = _db.get_all_payments()
+        clients  = _db.get_all_clients()
+    else:
+        all_pmts = read_rows(PAYMENTS_FILE)
+        clients  = read_rows(CLIENTS_FILE)
 
     filtered = []
     for p in all_pmts:
@@ -490,9 +556,14 @@ def payments():
 @login_required
 @admin_only
 def add_payment():
-    payments = read_rows(PAYMENTS_FILE)
-    clients  = read_rows(CLIENTS_FILE)
-    invoices = read_rows(INVOICES_FILE)
+    if _db.is_enabled():
+        payments = _db.get_all_payments()
+        clients  = _db.get_all_clients()
+        invoices = _db.get_all_invoices()
+    else:
+        payments = read_rows(PAYMENTS_FILE)
+        clients  = read_rows(CLIENTS_FILE)
+        invoices = read_rows(INVOICES_FILE)
 
     pay_id     = generate_id("P", payments, "payment_id")
     client_id  = request.form.get("client_id","")
@@ -523,8 +594,14 @@ def add_payment():
         "txn_id":        request.form.get("txn_id",""),
         "status":        status,
     }
-    payments.append(new)
-    write_rows(PAYMENTS_FILE, payments, PAYMENT_HEADERS)
+    
+    if _db.is_enabled():
+        _db.create_payment(new)
+        
+    excel_payments = read_rows(PAYMENTS_FILE)
+    excel_payments.append(new)
+    write_rows(PAYMENTS_FILE, excel_payments, PAYMENT_HEADERS)
+    
     flash(f"Payment {pay_id} recorded (Status: {status}).", "success")
     return redirect(url_for("admin.payments"))
 
@@ -533,6 +610,9 @@ def add_payment():
 @login_required
 @admin_only
 def delete_payment(pay_id):
+    if _db.is_enabled():
+        _db.delete_payment(pay_id)
+
     payments = read_rows(PAYMENTS_FILE)
     payments = [p for p in payments if p.get("payment_id") != pay_id]
     write_rows(PAYMENTS_FILE, payments, PAYMENT_HEADERS)
@@ -549,10 +629,17 @@ def delete_payment(pay_id):
 def generate_invoice(serial):
     from utils.invoice_generator import generate_invoice as gen_pdf
 
-    works    = read_rows(WORK_FILE)
-    payments = read_rows(PAYMENTS_FILE)
-    invoices = read_rows(INVOICES_FILE)
-    clients  = read_rows(CLIENTS_FILE)
+    if _db.is_enabled():
+        works    = _db.get_all_work()
+        payments = _db.get_all_payments()
+        invoices = _db.get_all_invoices()
+        clients  = _db.get_all_clients()
+    else:
+        works    = read_rows(WORK_FILE)
+        payments = read_rows(PAYMENTS_FILE)
+        invoices = read_rows(INVOICES_FILE)
+        clients  = read_rows(CLIENTS_FILE)
+        
     settings = get_all_settings()
 
     # Find work entry
@@ -607,7 +694,7 @@ def generate_invoice(serial):
 
     # Save invoice record
     if not existing:
-        invoices.append({
+        new_inv = {
             "invoice_no": invoice_no,
             "serial":     serial,
             "client_id":  work.get("client_id",""),
@@ -616,8 +703,14 @@ def generate_invoice(serial):
             "total":      total_amt,
             "status":     inv_data["payment_status"],
             "pdf_path":   pdf_path,
-        })
-        write_rows(INVOICES_FILE, invoices, INVOICE_HEADERS)
+        }
+        
+        if _db.is_enabled():
+            _db.create_invoice(new_inv)
+            
+        excel_invoices = read_rows(INVOICES_FILE)
+        excel_invoices.append(new_inv)
+        write_rows(INVOICES_FILE, excel_invoices, INVOICE_HEADERS)
 
     return send_file(pdf_path, as_attachment=True, download_name=pdf_filename)
 
@@ -629,10 +722,16 @@ def generate_invoice(serial):
 @login_required
 @admin_only
 def reports():
-    works    = read_rows(WORK_FILE)
-    payments = read_rows(PAYMENTS_FILE)
-    clients  = read_rows(CLIENTS_FILE)
-    services = read_rows(SERVICES_FILE)
+    if _db.is_enabled():
+        works    = _db.get_all_work()
+        payments = _db.get_all_payments()
+        clients  = _db.get_all_clients()
+        services = _db.get_all_services()
+    else:
+        works    = read_rows(WORK_FILE)
+        payments = read_rows(PAYMENTS_FILE)
+        clients  = read_rows(CLIENTS_FILE)
+        services = read_rows(SERVICES_FILE)
 
     report_type = request.args.get("type","monthly")
     today = today_str()
@@ -677,7 +776,11 @@ def export_excel():
     import io
     from openpyxl import Workbook as OWB
 
-    works = read_rows(WORK_FILE)
+    if _db.is_enabled():
+        works = _db.get_all_work()
+    else:
+        works = read_rows(WORK_FILE)
+        
     wb = OWB()
     ws = wb.active
     ws.title = "Work Report"
