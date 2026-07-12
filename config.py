@@ -36,3 +36,12 @@ DEFAULT_SMTP_NAME     = "VEMS"     # Sender name shown in email
 DEFAULT_PHONE     = "9668797558"
 DEFAULT_INSTAGRAM = "https://www.instagram.com/pradhan04_"
 DEFAULT_FOOTER    = "Thank you for your business! Call 9668797558 for any queries."
+
+class Config:
+    BASE_DIR = BASE_DIR
+    DATA_DIR = DATA_DIR
+    INVOICES_DIR = INVOICES_DIR
+    BACKUPS_DIR = BACKUPS_DIR
+    UPLOADS_DIR = UPLOADS_DIR
+    SECRET_KEY = SECRET_KEY
+

@@ -142,6 +142,26 @@ def create_app():
         if _db.is_enabled():
             _db.init_db()
             print("  [OK] Database initialized.")
+
+            # Seed default settings from Excel to DB if missing
+            settings_path = os.path.join(config.DATA_DIR, "settings.xlsx")
+            settings_rows = read_rows(settings_path)
+            for r in settings_rows:
+                k = r.get("key")
+                v = r.get("value", "")
+                if k and not _db.get_setting(k):
+                    _db.set_setting(k, v)
+
+            # Seed default services from Excel to DB if missing
+            services_path = os.path.join(config.DATA_DIR, "services.xlsx")
+            services_rows = read_rows(services_path)
+            db_services = _db.get_all_services()
+            db_service_ids = {s["service_id"] for s in db_services}
+            for s in services_rows:
+                sid = s.get("service_id")
+                if sid and sid not in db_service_ids:
+                    _db.create_service(s)
+            print("  [OK] Database seeded from Excel.")
     except Exception as e:
         print("  ! Database init failed:", e)
 

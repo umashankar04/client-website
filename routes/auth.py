@@ -220,22 +220,23 @@ def change_password():
             flash("Password must be at least 6 characters.", "danger")
             return redirect(url_for("auth.change_password"))
 
+        hashed_pw = generate_password_hash(new_pw)
         if current_user.role == "admin":
             stored_hash = get_setting("admin_password_hash", "")
             if not check_password_hash(stored_hash, old_pw):
                 flash("Current password incorrect.", "danger")
                 return redirect(url_for("auth.change_password"))
 
-            # Update password (DB or Excel)
+            # Update password (DB and Excel)
             if _db.is_enabled():
-                _db.set_setting("admin_password_hash", generate_password_hash(new_pw))
-            else:
-                rows = read_rows(SETTINGS_FILE)
-                for r in rows:
-                    if r["key"] == "admin_password_hash":
-                        r["value"] = generate_password_hash(new_pw)
-                        break
-                write_rows(SETTINGS_FILE, rows, SETTINGS_HEADERS)
+                _db.set_setting("admin_password_hash", hashed_pw)
+            
+            rows = read_rows(SETTINGS_FILE)
+            for r in rows:
+                if r["key"] == "admin_password_hash":
+                    r["value"] = hashed_pw
+                    break
+            write_rows(SETTINGS_FILE, rows, SETTINGS_HEADERS)
 
             flash("Admin password updated successfully.", "success")
             return redirect(url_for("admin.dashboard"))
@@ -244,29 +245,30 @@ def change_password():
             if _db.is_enabled():
                 # Verify current password via DB
                 client = _db.get_client_by_name(current_user.name)
-                if not client or not _db:
+                if not client or not check_password_hash(str(client.get("password", "")), old_pw):
                     flash("Current password incorrect.", "danger")
                     return redirect(url_for("auth.change_password"))
-                if not check_password_hash(str(client.get("password", "")), old_pw):
-                    flash("Current password incorrect.", "danger")
-                    return redirect(url_for("auth.change_password"))
-                _db.update_client_password(current_user.id, generate_password_hash(new_pw))
-                flash("Your password has been updated.", "success")
+                _db.update_client_password(current_user.id, hashed_pw)
             else:
                 clients = read_rows(CLIENTS_FILE)
-                updated = False
-                for c in clients:
-                    if c.get("client_id") == current_user.id:
-                        if not check_password_hash(str(c.get("password", "")), old_pw):
-                            flash("Current password incorrect.", "danger")
-                            return redirect(url_for("auth.change_password"))
-                        c["password"] = generate_password_hash(new_pw)
-                        updated = True
-                        break
+                matched_client = next((c for c in clients if c.get("client_id") == current_user.id), None)
+                if not matched_client or not check_password_hash(str(matched_client.get("password", "")), old_pw):
+                    flash("Current password incorrect.", "danger")
+                    return redirect(url_for("auth.change_password"))
 
-                if updated:
-                    write_rows(CLIENTS_FILE, clients, CLIENT_HEADERS)
-                    flash("Your password has been updated.", "success")
+            # Always write to Excel to keep local copy in sync
+            clients = read_rows(CLIENTS_FILE)
+            updated = False
+            for c in clients:
+                if c.get("client_id") == current_user.id:
+                    c["password"] = hashed_pw
+                    updated = True
+                    break
+
+            if updated:
+                write_rows(CLIENTS_FILE, clients, CLIENT_HEADERS)
+            
+            flash("Your password has been updated.", "success")
             return redirect(url_for("client.dashboard"))
 
     return render_template("change_password.html")

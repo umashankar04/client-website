@@ -10,7 +10,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, send_fil
 from flask_login import login_required, current_user
 
 import config
-from utils.excel_manager import read_rows
+from utils.excel_manager import read_rows, write_rows
 from utils.helpers import safe_float
 from utils import db as _db
 
@@ -21,6 +21,8 @@ PAYMENTS_FILE = os.path.join(config.DATA_DIR, "payments.xlsx")
 INVOICES_FILE = os.path.join(config.DATA_DIR, "invoices.xlsx")
 SETTINGS_FILE = os.path.join(config.DATA_DIR, "settings.xlsx")
 CLIENTS_FILE  = os.path.join(config.DATA_DIR, "clients.xlsx")
+
+INVOICE_HEADERS = ["invoice_no", "serial", "client_id", "client_name", "date", "total", "status", "pdf_path"]
 
 
 def get_setting(key, default=""):
@@ -156,5 +158,23 @@ def download_invoice(serial):
             "contact_phone":  settings.get("contact_phone", config.DEFAULT_PHONE),
         }
         gen_pdf(inv_data, pdf_path)
+
+        # Save invoice record
+        if not existing:
+            new_inv = {
+                "invoice_no": invoice_no,
+                "serial":     serial,
+                "client_id":  work.get("client_id",""),
+                "client_name":client.get("name",""),
+                "date":       str(work.get("date",""))[:10],
+                "total":      total_amt,
+                "status":     inv_data["payment_status"],
+                "pdf_path":   pdf_path,
+            }
+            if _db.is_enabled():
+                _db.create_invoice(new_inv)
+            excel_invoices = read_rows(INVOICES_FILE)
+            excel_invoices.append(new_inv)
+            write_rows(INVOICES_FILE, excel_invoices, INVOICE_HEADERS)
 
     return send_file(pdf_path, as_attachment=True, download_name=pdf_filename)

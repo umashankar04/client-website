@@ -87,7 +87,7 @@ class TestVEMSSystem(unittest.TestCase):
         
         client_by_user = client_model.get_client_by_username("johndoe")
         self.assertIsNotNone(client_by_user)
-
+ 
     def test_03_services(self):
         """Test standard services and customized prices."""
         # Test prepopulated services

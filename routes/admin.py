@@ -833,6 +833,10 @@ def settings():
                 else:
                     settings_dict[k] = {"key": k, "value": v}
 
+            if _db.is_enabled():
+                for k, v in updates.items():
+                    _db.set_setting(k, v)
+
             # Handle logo upload
             logo_file = request.files.get("logo_file")
             if logo_file and logo_file.filename:
