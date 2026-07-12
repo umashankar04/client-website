@@ -9,3 +9,4 @@ SQLAlchemy==2.0.20
 psycopg-binary==3.2.0
 psycopg==3.2.0
 python-dotenv==1.0.0
+mysql-connector-python==9.6.0

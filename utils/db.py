@@ -20,19 +20,19 @@ if DATABASE_URL:
 
     class Client(Base):
         __tablename__ = "clients"
-        client_id = Column(String, primary_key=True, index=True)
-        name = Column(String, nullable=False)
-        mobile = Column(String, nullable=True)
-        email = Column(String, nullable=True)
+        client_id = Column(String(50), primary_key=True, index=True)
+        name = Column(String(100), nullable=False)
+        mobile = Column(String(20), nullable=True)
+        email = Column(String(100), nullable=True)
         address = Column(Text, nullable=True)
-        username = Column(String, nullable=True)
-        password = Column(String, nullable=True)
-        status = Column(String, default="Active")
-        reg_date = Column(String, default=lambda: datetime.utcnow().isoformat())
+        username = Column(String(50), nullable=True)
+        password = Column(String(255), nullable=True)
+        status = Column(String(20), default="Active")
+        reg_date = Column(String(50), default=lambda: datetime.utcnow().isoformat())
 
     class Setting(Base):
         __tablename__ = "settings"
-        key = Column(String, primary_key=True)
+        key = Column(String(100), primary_key=True)
         value = Column(Text)
 
     def init_db():
