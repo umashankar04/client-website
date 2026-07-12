@@ -57,7 +57,7 @@ def setup_excel_files():
     for filename, headers in files.items():
         path = os.path.join(config.DATA_DIR, filename)
         ensure_file(path, headers)
-        print(f"  ✓ Excel ready: {filename}")
+        print(f"  [OK] Excel ready: {filename}")
 
 
 def setup_default_services():
@@ -82,7 +82,7 @@ def setup_default_services():
     ]
     data = [{"service_id": s[0], "name": s[1], "price": s[2]} for s in defaults]
     write_rows(path, data, SERVICE_HEADERS)
-    print("  ✓ Default services inserted.")
+    print("  [OK] Default services inserted.")
 
 
 def setup_admin_credentials():
@@ -125,7 +125,7 @@ def setup_admin_credentials():
 
     if changed:
         write_rows(path, rows, SETTINGS_HEADERS)
-        print("  ✓ Default settings written.")
+        print("  [OK] Default settings written.")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -141,7 +141,7 @@ def create_app():
     try:
         if _db.is_enabled():
             _db.init_db()
-            print("  ✓ Database initialized.")
+            print("  [OK] Database initialized.")
     except Exception as e:
         print("  ! Database init failed:", e)
 
