@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 import config
 from utils.excel_manager import read_rows, write_rows, append_row, ensure_file
 from utils.helpers import today_str, safe_float, safe_int, generate_id
+from utils import db as _db
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -143,10 +144,15 @@ def dashboard():
 @admin_only
 def clients():
     search = request.args.get("q","").strip().lower()
-    all_clients = read_rows(CLIENTS_FILE)
+    if _db.is_enabled():
+        all_clients = _db.get_all_clients()
+    else:
+        all_clients = read_rows(CLIENTS_FILE)
+        
     if search:
         all_clients = [c for c in all_clients if
             search in str(c.get("name","")).lower() or
+            search in str(c.get("username","")).lower() or
             search in str(c.get("mobile","")).lower() or
             search in str(c.get("email","")).lower()]
     return render_template("clients.html", clients=all_clients, search=search)
@@ -156,7 +162,11 @@ def clients():
 @login_required
 @admin_only
 def add_client():
-    rows = read_rows(CLIENTS_FILE)
+    if _db.is_enabled():
+        rows = _db.get_all_clients()
+    else:
+        rows = read_rows(CLIENTS_FILE)
+        
     client_id = generate_id("C", rows, "client_id")
     new = {
         "client_id":  client_id,
@@ -174,8 +184,15 @@ def add_client():
         if c.get("username","").lower() == new["username"].lower():
             flash("Username already exists!", "danger")
             return redirect(url_for("admin.clients"))
-    rows.append(new)
-    write_rows(CLIENTS_FILE, rows, CLIENT_HEADERS)
+            
+    if _db.is_enabled():
+        _db.create_client(new)
+        
+    # Always write to Excel to keep local copy in sync
+    excel_rows = read_rows(CLIENTS_FILE)
+    excel_rows.append(new)
+    write_rows(CLIENTS_FILE, excel_rows, CLIENT_HEADERS)
+    
     flash(f"Client '{new['name']}' added (ID: {client_id}).", "success")
     return redirect(url_for("admin.clients"))
 
@@ -185,14 +202,29 @@ def add_client():
 @admin_only
 def edit_client():
     client_id = request.form.get("client_id")
+    name = request.form.get("name","").strip()
+    mobile = request.form.get("mobile","").strip()
+    email = request.form.get("email","").strip()
+    address = request.form.get("address","").strip()
+    status = request.form.get("status","Active")
+
+    if _db.is_enabled():
+        update_data = {}
+        if name: update_data["name"] = name
+        if mobile: update_data["mobile"] = mobile
+        if email: update_data["email"] = email
+        if address: update_data["address"] = address
+        if status: update_data["status"] = status
+        _db.update_client(client_id, update_data)
+
     rows = read_rows(CLIENTS_FILE)
     for c in rows:
         if c.get("client_id") == client_id:
-            c["name"]    = request.form.get("name", c["name"])
-            c["mobile"]  = request.form.get("mobile", c["mobile"])
-            c["email"]   = request.form.get("email", c["email"])
-            c["address"] = request.form.get("address", c["address"])
-            c["status"]  = request.form.get("status", c["status"])
+            c["name"]    = name or c["name"]
+            c["mobile"]  = mobile or c["mobile"]
+            c["email"]   = email or c["email"]
+            c["address"] = address or c["address"]
+            c["status"]  = status or c["status"]
             break
     write_rows(CLIENTS_FILE, rows, CLIENT_HEADERS)
     flash("Client updated.", "success")
@@ -203,6 +235,9 @@ def edit_client():
 @login_required
 @admin_only
 def delete_client(client_id):
+    if _db.is_enabled():
+        _db.delete_client(client_id)
+
     rows = read_rows(CLIENTS_FILE)
     rows = [c for c in rows if c.get("client_id") != client_id]
     write_rows(CLIENTS_FILE, rows, CLIENT_HEADERS)
@@ -214,12 +249,18 @@ def delete_client(client_id):
 @login_required
 @admin_only
 def toggle_client(client_id):
+    new_status = "Active"
     rows = read_rows(CLIENTS_FILE)
     for c in rows:
         if c.get("client_id") == client_id:
             c["status"] = "Inactive" if c.get("status") == "Active" else "Active"
+            new_status = c["status"]
             break
     write_rows(CLIENTS_FILE, rows, CLIENT_HEADERS)
+
+    if _db.is_enabled():
+        _db.update_client(client_id, {"status": new_status})
+
     flash("Client status toggled.", "success")
     return redirect(url_for("admin.clients"))
 
@@ -230,10 +271,15 @@ def toggle_client(client_id):
 def reset_client_password():
     client_id = request.form.get("client_id")
     new_pw    = request.form.get("new_password","changeme123")
+    hashed_pw = generate_password_hash(new_pw)
+
+    if _db.is_enabled():
+        _db.update_client_password(client_id, hashed_pw)
+
     rows = read_rows(CLIENTS_FILE)
     for c in rows:
         if c.get("client_id") == client_id:
-            c["password"] = generate_password_hash(new_pw)
+            c["password"] = hashed_pw
             break
     write_rows(CLIENTS_FILE, rows, CLIENT_HEADERS)
     flash("Password reset successfully.", "success")

@@ -163,6 +163,12 @@ def create_app():
         if user_id == "admin":
             return AdminUser()
 
+        if _db.is_enabled():
+            client_data = _db.get_client_by_id(user_id)
+            if client_data:
+                return ClientUser(client_data)
+            return None
+
         # Look up client by client_id
         clients_path = os.path.join(config.DATA_DIR, "clients.xlsx")
         for c in read_rows(clients_path):

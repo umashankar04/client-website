@@ -1,10 +1,16 @@
 import os
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
+    # Auto-convert standard PostgreSQL schemes to use psycopg3 (since psycopg v3 is installed)
+    if DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
+    elif DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+psycopg://", 1)
+
     from sqlalchemy import (create_engine, Column, String, Text, DateTime)
     from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -35,6 +41,18 @@ if DATABASE_URL:
     def is_enabled() -> bool:
         return True
 
+    def get_all_clients() -> List[Dict[str, Any]]:
+        with SessionLocal() as s:
+            clients = s.query(Client).all()
+            return [{k: getattr(c, k) for k in c.__table__.columns.keys()} for c in clients]
+
+    def get_client_by_id(client_id: str) -> Optional[Dict[str, Any]]:
+        with SessionLocal() as s:
+            c = s.query(Client).filter(Client.client_id == client_id).first()
+            if not c:
+                return None
+            return {k: getattr(c, k) for k in c.__table__.columns.keys()}
+
     def get_client_by_name(name: str) -> Optional[Dict[str, Any]]:
         with SessionLocal() as s:
             c = s.query(Client).filter(Client.name.ilike(name)).first()
@@ -49,12 +67,32 @@ if DATABASE_URL:
             s.commit()
             return {k: getattr(c, k) for k in c.__table__.columns.keys()}
 
+    def update_client(client_id: str, data: Dict[str, Any]) -> bool:
+        with SessionLocal() as s:
+            c = s.query(Client).filter(Client.client_id == client_id).first()
+            if c:
+                for k, v in data.items():
+                    if hasattr(c, k):
+                        setattr(c, k, v)
+                s.commit()
+                return True
+            return False
+
     def update_client_password(client_id: str, new_hash: str) -> None:
         with SessionLocal() as s:
             c = s.query(Client).filter(Client.client_id == client_id).first()
             if c:
                 c.password = new_hash
                 s.commit()
+
+    def delete_client(client_id: str) -> bool:
+        with SessionLocal() as s:
+            c = s.query(Client).filter(Client.client_id == client_id).first()
+            if c:
+                s.delete(c)
+                s.commit()
+                return True
+            return False
 
     def get_setting(key: str, default: str = "") -> str:
         with SessionLocal() as s:
@@ -79,13 +117,25 @@ else:
     def is_enabled() -> bool:
         return False
 
+    def get_all_clients() -> list:
+        return []
+
+    def get_client_by_id(client_id: str):
+        return None
+
     def get_client_by_name(name: str):
         return None
 
     def create_client(data: dict):
         raise RuntimeError("DB not enabled")
 
+    def update_client(client_id: str, data: dict) -> bool:
+        raise RuntimeError("DB not enabled")
+
     def update_client_password(client_id: str, new_hash: str) -> None:
+        raise RuntimeError("DB not enabled")
+
+    def delete_client(client_id: str) -> bool:
         raise RuntimeError("DB not enabled")
 
     def get_setting(key: str, default: str = "") -> str:

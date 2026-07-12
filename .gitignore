@@ -42,3 +42,7 @@ uploads/*.jpeg
 .vscode/
 .idea/
 .gemini/
+
+# Environment secrets
+.env
+.env.local
