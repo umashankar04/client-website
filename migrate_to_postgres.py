@@ -25,7 +25,7 @@ def migrate():
 
     print("[*] Initializing Database schema...")
     _db.init_db()
-    print("[✓] Database initialized.")
+    print("[OK] Database initialized.")
 
     # 1. Migrate settings
     print("[*] Migrating settings...")
@@ -40,7 +40,7 @@ def migrate():
                 if not _db.get_setting(key):
                     _db.set_setting(key, value)
                     migrated_settings += 1
-        print(f"[✓] Migrated {migrated_settings} settings.")
+        print(f"[OK] Migrated {migrated_settings} settings.")
     except Exception as e:
         print(f"[!] Failed to migrate settings: {e}")
 
@@ -71,11 +71,11 @@ def migrate():
                 }
                 _db.create_client(db_data)
                 migrated_clients += 1
-        print(f"[✓] Migrated {migrated_clients} clients.")
+        print(f"[OK] Migrated {migrated_clients} clients.")
     except Exception as e:
         print(f"[!] Failed to migrate clients: {e}")
 
-    print("\n[★] Migration complete!")
+    print("\n[SUCCESS] Migration complete!")
 
 if __name__ == "__main__":
     migrate()
